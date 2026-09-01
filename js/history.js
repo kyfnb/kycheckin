@@ -354,14 +354,17 @@ function changeCalendarMonth(delta) {
 async function loadUnvisited() {
   const listEl = document.getElementById("unvisited-list");
   const emptyEl = document.getElementById("unvisited-empty");
+  const statsCard = document.getElementById("unvisited-stats");
   listEl.innerHTML = "";
 
   try {
     const result = await apiGet({ action: "getUnvisitedStores", svName: sv.name });
     const stores = result.stores || [];
-    const thresholdDays = result.thresholdDays || 60;
-    document.getElementById("unvisited-sub").textContent =
-      `최근 ${thresholdDays}일간 방문하지 않은 담당 매장이에요. (매장정보의 담당자 이름 "${sv.name}" 기준)`;
+
+    statsCard.style.display = "block";
+    document.getElementById("stat-total").textContent = result.totalAssigned ?? 0;
+    document.getElementById("stat-visited").textContent = result.visitedCount ?? 0;
+    document.getElementById("stat-unvisited").textContent = result.unvisitedCount ?? stores.length;
 
     if (stores.length === 0) {
       emptyEl.style.display = "block";
