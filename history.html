@@ -20,9 +20,9 @@
     <p class="page-title">방문 이력</p>
 
     <div class="btn-row" style="margin-bottom:16px;">
-      <button class="btn btn-secondary" id="view-list-btn" onclick="setView('list')">목 록</button>
-      <button class="btn btn-secondary" id="view-calendar-btn" onclick="setView('calendar')">방문<br/>캘린더</button>
-      <button class="btn btn-secondary" id="view-unvisited-btn" onclick="setView('unvisited')">미방문<br/>매장</button>
+      <button class="btn btn-secondary tab-btn" id="view-list-btn" onclick="setView('list')">목 록</button>
+      <button class="btn btn-secondary tab-btn" id="view-calendar-btn" onclick="setView('calendar')">방문캘린더</button>
+      <button class="btn btn-secondary tab-btn" id="view-unvisited-btn" onclick="setView('unvisited')">미방문매장</button>
     </div>
 
     <!-- ===== 1) 목록 뷰 ===== -->
@@ -46,7 +46,7 @@
       </div>
 
       <div class="btn-row" style="margin-bottom:16px;" id="filter-row">
-        <button class="btn btn-secondary" id="filter-mine" onclick="setFilter('mine')">담당매장</button>
+        <button class="btn btn-secondary" id="filter-mine" onclick="setFilter('mine')">방문내역</button>
         <button class="btn btn-secondary" id="filter-all" onclick="setFilter('all')">전체 보기</button>
       </div>
 
