@@ -28,8 +28,14 @@
     <!-- 리더/관리자 전용: 팀·담당자 필터 (목록/캘린더 공용) -->
     <div class="card" id="team-manager-filter-card" style="display:none;">
       <div class="field">
+        <label for="history-brand-filter">브랜드</label>
+        <select id="history-brand-filter" onchange="handleBrandFilterChange()">
+          <option value="">전체</option>
+        </select>
+      </div>
+      <div class="field">
         <label for="history-team-filter">팀</label>
-        <select id="history-team-filter" onchange="handleTeamManagerFilterChange()">
+        <select id="history-team-filter" onchange="handleTeamFilterChange()">
           <option value="">전체</option>
         </select>
       </div>

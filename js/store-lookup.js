@@ -20,31 +20,69 @@ if (isPrivileged) {
   document.getElementById("filter-card").style.display = "block";
   document.getElementById("page-sub-text").textContent =
     "전체 매장을 검색하거나, 브랜드/팀/담당자로 필터링해서 찾을 수 있어요.";
-  loadFilterOptions();
+  loadBrandOptions();
+  loadTeamManagerOptions();
 } else {
   document.getElementById("page-sub-text").textContent =
     "담당하고 계신 매장만 검색돼요. 검색어 없이 '검색' 버튼만 눌러도 담당 매장 전체가 나와요.";
 }
 
-async function loadFilterOptions() {
+// 팀 이름 표기 정리: 원본 값(예: "두찜1T", "1T" 등)에서 숫자만 뽑아 "N팀"으로 보여줍니다.
+function normalizeTeamLabel(raw) {
+  const match = String(raw).match(/(\d+)\s*T?$/i);
+  return match ? `${match[1]}팀` : raw;
+}
+
+async function loadBrandOptions() {
   try {
     const result = await apiGet({ action: "getFilterOptions" });
     fillSelect("filter-brand", result.brands || []);
-    fillSelect("filter-team", result.teams || []);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// 브랜드 선택값에 따라 팀 옵션을, 팀 선택값에 따라 담당자 옵션을 다시 불러옵니다.
+async function loadTeamManagerOptions() {
+  try {
+    const result = await apiGet({
+      action: "getFilterOptions",
+      brand: document.getElementById("filter-brand").value,
+      team: document.getElementById("filter-team").value
+    });
+    fillSelect("filter-team", result.teams || [], normalizeTeamLabel);
     fillSelect("filter-manager", result.managers || []);
   } catch (e) {
     console.error(e);
   }
 }
 
-function fillSelect(id, options) {
+function fillSelect(id, options, labelFn) {
   const select = document.getElementById(id);
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">전체</option>';
   options.forEach((opt) => {
     const el = document.createElement("option");
     el.value = opt;
-    el.textContent = opt;
+    el.textContent = labelFn ? labelFn(opt) : opt;
     select.appendChild(el);
   });
+  if (options.includes(previousValue)) {
+    select.value = previousValue;
+  }
+}
+
+async function handleBrandFilterChange() {
+  document.getElementById("filter-team").value = "";
+  document.getElementById("filter-manager").value = "";
+  await loadTeamManagerOptions();
+  handleSearch();
+}
+
+async function handleTeamFilterChange() {
+  document.getElementById("filter-manager").value = "";
+  await loadTeamManagerOptions();
+  handleSearch();
 }
 
 async function handleSearch() {

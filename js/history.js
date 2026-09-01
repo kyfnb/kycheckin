@@ -16,39 +16,90 @@ if (!isPrivilegedHistory) {
   document.getElementById("filter-all").style.display = "none";
 }
 
-// 리더/관리자는 팀·담당자 필터를 쓸 수 있습니다.
+// 리더/관리자는 브랜드·팀·담당자 필터를 쓸 수 있습니다 (브랜드 → 팀 → 담당자 순으로 연동됨).
+let currentBrandFilter = "";
 let currentTeamFilter = "";
 let currentManagerFilter = "";
 
 if (isPrivilegedHistory) {
   document.getElementById("team-manager-filter-card").style.display = "block";
-  loadTeamManagerFilterOptions();
+  loadBrandOptions();
+  loadTeamManagerOptions();
 }
 
-async function loadTeamManagerFilterOptions() {
+// 팀 이름 표기 정리: 원본 값(예: "두찜1T", "1T" 등)에서 숫자만 뽑아 "N팀"으로 보여줍니다.
+// 실제 필터링에는 원본 값을 그대로 쓰고, 화면 표시만 예쁘게 바꾸는 용도입니다.
+function normalizeTeamLabel(raw) {
+  const match = String(raw).match(/(\d+)\s*T?$/i);
+  return match ? `${match[1]}팀` : raw;
+}
+
+async function loadBrandOptions() {
   try {
     const result = await apiGet({ action: "getFilterOptions" });
-    fillFilterSelect("history-team-filter", result.teams || []);
+    fillFilterSelect("history-brand-filter", result.brands || []);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// 브랜드 선택값에 따라 팀 옵션을, 팀 선택값에 따라 담당자 옵션을 다시 불러옵니다.
+async function loadTeamManagerOptions() {
+  try {
+    const result = await apiGet({
+      action: "getFilterOptions",
+      brand: currentBrandFilter,
+      team: currentTeamFilter
+    });
+    fillFilterSelect("history-team-filter", result.teams || [], normalizeTeamLabel);
     fillFilterSelect("history-manager-filter", result.managers || []);
   } catch (e) {
     console.error(e);
   }
 }
 
-function fillFilterSelect(id, options) {
+function fillFilterSelect(id, options, labelFn) {
   const select = document.getElementById(id);
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">전체</option>';
   options.forEach((opt) => {
     const el = document.createElement("option");
     el.value = opt;
-    el.textContent = opt;
+    el.textContent = labelFn ? labelFn(opt) : opt;
     select.appendChild(el);
   });
+  // 이전에 고른 값이 새 목록에도 있으면 유지
+  if (options.includes(previousValue)) {
+    select.value = previousValue;
+  }
+}
+
+async function handleBrandFilterChange() {
+  currentBrandFilter = document.getElementById("history-brand-filter").value;
+  // 브랜드가 바뀌면 팀·담당자 선택은 초기화하고, 그 브랜드 기준으로 옵션을 다시 불러옵니다.
+  currentTeamFilter = "";
+  currentManagerFilter = "";
+  document.getElementById("history-team-filter").value = "";
+  document.getElementById("history-manager-filter").value = "";
+  await loadTeamManagerOptions();
+  refreshCurrentView();
+  if (currentView === "unvisited") loadUnvisited();
+}
+
+async function handleTeamFilterChange() {
+  currentTeamFilter = document.getElementById("history-team-filter").value;
+  // 팀이 바뀌면 담당자 선택은 초기화하고, 그 팀 기준으로 담당자 옵션을 다시 불러옵니다.
+  currentManagerFilter = "";
+  document.getElementById("history-manager-filter").value = "";
+  await loadTeamManagerOptions();
+  refreshCurrentView();
+  if (currentView === "unvisited") loadUnvisited();
 }
 
 function handleTeamManagerFilterChange() {
-  currentTeamFilter = document.getElementById("history-team-filter").value;
   currentManagerFilter = document.getElementById("history-manager-filter").value;
   refreshCurrentView();
+  if (currentView === "unvisited") loadUnvisited();
 }
 
 let currentView = "list";
@@ -141,6 +192,7 @@ async function loadVisits() {
       filter: currentFilter,
       startDate: range.start,
       endDate: range.end,
+      brand: isPrivilegedHistory ? currentBrandFilter : "",
       team: isPrivilegedHistory ? currentTeamFilter : "",
       manager: isPrivilegedHistory ? currentManagerFilter : ""
     });
@@ -316,6 +368,7 @@ async function loadCalendar() {
       filter: currentFilter,
       startDate,
       endDate,
+      brand: isPrivilegedHistory ? currentBrandFilter : "",
       team: isPrivilegedHistory ? currentTeamFilter : "",
       manager: isPrivilegedHistory ? currentManagerFilter : ""
     });
@@ -397,7 +450,14 @@ async function loadUnvisited() {
   listEl.innerHTML = "";
 
   try {
-    const result = await apiGet({ action: "getUnvisitedStores", svName: sv.name });
+    const result = await apiGet({
+      action: "getUnvisitedStores",
+      svName: sv.name,
+      isPrivileged: isPrivilegedHistory ? "true" : "false",
+      brand: isPrivilegedHistory ? currentBrandFilter : "",
+      team: isPrivilegedHistory ? currentTeamFilter : "",
+      manager: isPrivilegedHistory ? currentManagerFilter : ""
+    });
     const stores = result.stores || [];
 
     statsCard.style.display = "block";
