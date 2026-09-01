@@ -445,6 +445,13 @@ body.has-session-banner .brand-header {
   white-space: nowrap;
 }
 
+/* 방문이력 상단 탭(목록/방문캘린더/미방문매장) 버튼: 한 줄로 들어가야 해서 폰트를 줄임 */
+.tab-btn {
+  font-size: 12.5px;
+  padding: 12px 4px;
+  white-space: nowrap;
+}
+
 /* 미방문 매장 통계 (담당/방문/미방문 카운트) */
 .stats-row {
   display: flex;

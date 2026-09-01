@@ -30,9 +30,9 @@ function setView(view) {
   document.getElementById("calendar-view").style.display = view === "calendar" ? "block" : "none";
   document.getElementById("unvisited-view").style.display = view === "unvisited" ? "block" : "none";
 
-  document.getElementById("view-list-btn").className = view === "list" ? "btn btn-primary" : "btn btn-secondary";
-  document.getElementById("view-calendar-btn").className = view === "calendar" ? "btn btn-primary" : "btn btn-secondary";
-  document.getElementById("view-unvisited-btn").className = view === "unvisited" ? "btn btn-primary" : "btn btn-secondary";
+  document.getElementById("view-list-btn").className = view === "list" ? "btn btn-primary tab-btn" : "btn btn-secondary tab-btn";
+  document.getElementById("view-calendar-btn").className = view === "calendar" ? "btn btn-primary tab-btn" : "btn btn-secondary tab-btn";
+  document.getElementById("view-unvisited-btn").className = view === "unvisited" ? "btn btn-primary tab-btn" : "btn btn-secondary tab-btn";
 
   if (view === "list") loadVisits();
   if (view === "calendar") loadCalendar();

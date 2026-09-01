@@ -6,4 +6,4 @@
    예시: https://script.google.com/macros/s/AKfycb.../exec
    ======================================== */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyZsNsJKTDIzdQ1CLeTTjsyhYi6RjbVYKd85yU3bqCnMF2OcMnnQe4IjL62Q7UDbGwA_g/exec";
+const API_URL = "여기에_본인_Apps_Script_웹앱_URL_붙여넣기";
