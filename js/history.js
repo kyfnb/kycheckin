@@ -45,11 +45,14 @@ async function loadVisits() {
       const statusClass = v.verified ? "ok" : "fail";
       const statusText = v.verified ? "✓ 확인됨" : "⚠ 위치불일치";
       const when = v.visitedAt ? formatDateTime(v.visitedAt) : "-";
+      const photoLink = v.photoUrl
+        ? `<a href="${v.photoUrl}" target="_blank" style="color:var(--primary); font-size:12px; text-decoration:underline;">사진보기</a>`
+        : "";
 
       row.innerHTML = `
         <div>
           <div class="store-name">${escapeHtml(v.storeName)}</div>
-          <div class="meta">${when} · ${escapeHtml(v.svName)} · ${v.distanceMeters}m</div>
+          <div class="meta">${when} · ${escapeHtml(v.svName)} · ${v.distanceMeters}m ${photoLink ? "· " + photoLink : ""}</div>
         </div>
         <span class="status-pill ${statusClass}">${statusText}</span>
       `;

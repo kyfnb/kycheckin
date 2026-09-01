@@ -4,30 +4,30 @@
    ======================================== */
 
 :root {
-  --bg: #F5F6F4;
+  --bg: #F7F6F3;
   --surface: #FFFFFF;
-  --ink: #1C2321;
-  --muted: #6B7570;
-  --border: #DFE3E0;
+  --ink: #1A1A1A;
+  --muted: #6E6B66;
+  --border: #E4E1DA;
 
-  --primary: #146B5C;
-  --primary-dark: #0E4F44;
-  --primary-soft: #E4EFEC;
+  --primary: #1A1A1A;
+  --primary-dark: #000000;
+  --primary-soft: #ECEBE8;
 
-  --accent: #E8A33D;
-  --accent-soft: #FBF0DC;
+  --accent: #B08D57;
+  --accent-soft: #F3ECDF;
 
-  --danger: #C1443B;
-  --danger-soft: #FBE9E7;
+  --danger: #B33A2E;
+  --danger-soft: #FBEAE7;
 
-  --success: #146B5C;
-  --success-soft: #E4EFEC;
+  --success: #2F6B4F;
+  --success-soft: #E7F0EA;
 
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
 
-  --shadow: 0 1px 2px rgba(28, 35, 33, 0.06), 0 4px 16px rgba(28, 35, 33, 0.06);
+  --shadow: 0 1px 2px rgba(26, 26, 26, 0.06), 0 4px 16px rgba(26, 26, 26, 0.07);
 }
 
 * { box-sizing: border-box; }
@@ -42,7 +42,7 @@ html, body {
 }
 
 h1, h2, h3 {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Noto Serif KR', serif;
   font-weight: 600;
   letter-spacing: -0.01em;
   margin: 0 0 4px 0;
@@ -72,6 +72,27 @@ h1, h2, h3 {
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.brand-header {
+  padding: 28px 20px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.brand-header img {
+  height: 22px;
+  width: auto;
+}
+
+.brand-header .tagline {
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 .topbar .eyebrow {

@@ -1,10 +1,10 @@
 {
-  "name": "가맹점 방문 확인",
-  "short_name": "방문확인",
+  "name": "KIYOUNG F&B 가맹점 방문 확인",
+  "short_name": "KY 방문확인",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#F5F6F4",
-  "theme_color": "#146B5C",
+  "background_color": "#F7F6F3",
+  "theme_color": "#1A1A1A",
   "orientation": "portrait",
   "icons": [
     {
