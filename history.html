@@ -25,6 +25,22 @@
       <button class="btn btn-secondary tab-btn" id="view-unvisited-btn" onclick="setView('unvisited')">미방문매장</button>
     </div>
 
+    <!-- 리더/관리자 전용: 팀·담당자 필터 (목록/캘린더 공용) -->
+    <div class="card" id="team-manager-filter-card" style="display:none;">
+      <div class="field">
+        <label for="history-team-filter">팀</label>
+        <select id="history-team-filter" onchange="handleTeamManagerFilterChange()">
+          <option value="">전체</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="history-manager-filter">담당자</label>
+        <select id="history-manager-filter" onchange="handleTeamManagerFilterChange()">
+          <option value="">전체</option>
+        </select>
+      </div>
+    </div>
+
     <!-- ===== 1) 목록 뷰 ===== -->
     <div id="list-view">
       <div class="card">

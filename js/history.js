@@ -16,6 +16,41 @@ if (!isPrivilegedHistory) {
   document.getElementById("filter-all").style.display = "none";
 }
 
+// 리더/관리자는 팀·담당자 필터를 쓸 수 있습니다.
+let currentTeamFilter = "";
+let currentManagerFilter = "";
+
+if (isPrivilegedHistory) {
+  document.getElementById("team-manager-filter-card").style.display = "block";
+  loadTeamManagerFilterOptions();
+}
+
+async function loadTeamManagerFilterOptions() {
+  try {
+    const result = await apiGet({ action: "getFilterOptions" });
+    fillFilterSelect("history-team-filter", result.teams || []);
+    fillFilterSelect("history-manager-filter", result.managers || []);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function fillFilterSelect(id, options) {
+  const select = document.getElementById(id);
+  options.forEach((opt) => {
+    const el = document.createElement("option");
+    el.value = opt;
+    el.textContent = opt;
+    select.appendChild(el);
+  });
+}
+
+function handleTeamManagerFilterChange() {
+  currentTeamFilter = document.getElementById("history-team-filter").value;
+  currentManagerFilter = document.getElementById("history-manager-filter").value;
+  refreshCurrentView();
+}
+
 let currentView = "list";
 let currentFilter = "mine";
 let currentPeriod = "1m";
@@ -105,7 +140,9 @@ async function loadVisits() {
       svId: sv.email,
       filter: currentFilter,
       startDate: range.start,
-      endDate: range.end
+      endDate: range.end,
+      team: isPrivilegedHistory ? currentTeamFilter : "",
+      manager: isPrivilegedHistory ? currentManagerFilter : ""
     });
 
     const visits = result.visits || [];
@@ -278,7 +315,9 @@ async function loadCalendar() {
       svId: sv.email,
       filter: currentFilter,
       startDate,
-      endDate
+      endDate,
+      team: isPrivilegedHistory ? currentTeamFilter : "",
+      manager: isPrivilegedHistory ? currentManagerFilter : ""
     });
     visits = result.visits || [];
   } catch (e) {
