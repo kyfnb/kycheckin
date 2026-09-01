@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   /* POS 화면에 종일 띄워둘 화면이라 최대한 단순하고 눈에 잘 띄게 */
-  body { background: var(--primary); }
+  body { background: var(--bg); }
   .kiosk-shell {
     min-height: 100vh;
     display: flex;
@@ -76,7 +76,7 @@
     <div class="kiosk-qr-box">
       <div id="qr-code-box"></div>
     </div>
-    <div class="kiosk-caption">이 화면을 그대로 켜두세요 · QR은 30초마다 자동 갱신됩니다</div>
+    <div class="kiosk-caption">이 화면을 그대로 켜두세요 · QR은 1분마다 자동 갱신됩니다</div>
     <div class="kiosk-timer-track"><div class="kiosk-timer-fill" id="timer-fill"></div></div>
   </div>
 </div>

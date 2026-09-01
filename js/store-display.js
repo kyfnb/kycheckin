@@ -2,13 +2,13 @@
    store-display.js
    URL 예: store-display.html?storeId=GN-001
 
-   QR에는 { storeId, w } 를 담습니다. w는 "30초 단위 시간 창 번호"로,
+   QR에는 { storeId, w } 를 담습니다. w는 "1분 단위 시간 창 번호"로,
    서버(Apps Script)가 스캔 시점의 w와 비교해서 오래된 QR(사진 캡처 등)을
    걸러냅니다. 매장별 비밀값 없이도 "지금 이 순간 화면에 떠 있는 QR인지"를
    충분히 검증할 수 있어요.
    ======================================== */
 
-const WINDOW_SECONDS = 30;
+const WINDOW_SECONDS = 60;
 
 function getWindowIndex() {
   return Math.floor(Date.now() / 1000 / WINDOW_SECONDS);
@@ -85,7 +85,7 @@ async function init() {
   renderQr(storeId);
   startCountdown();
 
-  // 다음 30초 경계에 정확히 맞춰서 첫 갱신, 이후 30초마다 반복
+  // 다음 1분 경계에 정확히 맞춰서 첫 갱신, 이후 1분마다 반복
   const msUntilNextWindow = WINDOW_SECONDS * 1000 - (Date.now() % (WINDOW_SECONDS * 1000));
   setTimeout(() => {
     renderQr(storeId);

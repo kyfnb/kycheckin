@@ -5,16 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>가맹점 방문 확인</title>
 <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#1A1A1A" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="theme-color" content="#101010" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
+<style>
+  #app-splash {
+    position: fixed;
+    inset: 0;
+    background: #101010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.45s ease;
+  }
+  #app-splash img {
+    width: 55vw;
+    max-width: 220px;
+    animation: splash-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes splash-pulse {
+    0%, 100% { opacity: 0.65; }
+    50% { opacity: 1; }
+  }
+  #app-splash.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
 </head>
 <body>
 
+<div id="app-splash">
+  <img src="assets/logo-white.png" alt="KIYOUNG F&B" />
+</div>
+
 <div class="app-shell">
   <div class="brand-header">
-    <img src="assets/logo.png" alt="KIYOUNG F&B" />
+    <img src="assets/logo-white.png" alt="KIYOUNG F&B" />
     <div class="tagline">FRANCHISE VISIT LOG</div>
   </div>
 
@@ -53,13 +85,12 @@
     <!-- 3. 로그인 후 메인 메뉴 -->
     <div id="main-view" style="display:none;">
       <p class="page-title">안녕하세요, <span id="welcome-name"></span>님</p>
-      <p class="page-sub">오늘 방문할 가맹점의 QR코드를 스캔하세요.</p>
+      <p class="page-sub">가맹점의 QR CODE를 스캔하세요.</p>
 
       <a href="scan.html" style="text-decoration:none;">
         <div class="card" style="text-align:center; padding:32px 20px;">
           <div style="font-size:40px; margin-bottom:8px;">📷</div>
-          <div style="font-weight:600; font-size:16px; margin-bottom:4px;">QR 스캔하고 방문 등록</div>
-          <div class="hint">카메라와 위치 권한이 필요해요</div>
+          <div style="font-weight:600; font-size:16px;">QR SCAN</div>
         </div>
       </a>
 
@@ -68,7 +99,7 @@
           <button class="btn btn-secondary">방문 이력</button>
         </a>
         <a href="store-lookup.html" style="text-decoration:none; flex:1;">
-          <button class="btn btn-secondary">가맹점 QR 링크 찾기</button>
+          <button class="btn btn-secondary">QRCODE 설치</button>
         </a>
       </div>
 
@@ -135,6 +166,17 @@
   }
 
   renderInitialView();
+
+  // 실행 스플래시 화면: 최소 500ms는 보여준 뒤 부드럽게 사라짐
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      const splash = document.getElementById("app-splash");
+      if (splash) {
+        splash.classList.add("hide");
+        setTimeout(() => splash.remove(), 500);
+      }
+    }, 500);
+  });
 
   // PWA 서비스워커 등록
   if ("serviceWorker" in navigator) {

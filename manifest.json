@@ -3,8 +3,8 @@
   "short_name": "KY 방문확인",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#F7F6F3",
-  "theme_color": "#1A1A1A",
+  "background_color": "#101010",
+  "theme_color": "#101010",
   "orientation": "portrait",
   "icons": [
     {

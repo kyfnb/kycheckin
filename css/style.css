@@ -4,30 +4,30 @@
    ======================================== */
 
 :root {
-  --bg: #F7F6F3;
-  --surface: #FFFFFF;
-  --ink: #1A1A1A;
-  --muted: #6E6B66;
-  --border: #E4E1DA;
+  --bg: #101010;
+  --surface: #1B1B1B;
+  --ink: #F5F1E8;
+  --muted: #9C968A;
+  --border: #2E2B24;
 
-  --primary: #1A1A1A;
-  --primary-dark: #000000;
-  --primary-soft: #ECEBE8;
+  --primary: #C9A227;
+  --primary-dark: #A9861C;
+  --primary-soft: rgba(201, 162, 39, 0.14);
 
-  --accent: #B08D57;
-  --accent-soft: #F3ECDF;
+  --accent: #C9A227;
+  --accent-soft: rgba(201, 162, 39, 0.14);
 
-  --danger: #B33A2E;
-  --danger-soft: #FBEAE7;
+  --danger: #E2685C;
+  --danger-soft: rgba(226, 104, 92, 0.14);
 
-  --success: #2F6B4F;
-  --success-soft: #E7F0EA;
+  --success: #4FAE7D;
+  --success-soft: rgba(79, 174, 125, 0.14);
 
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
 
-  --shadow: 0 1px 2px rgba(26, 26, 26, 0.06), 0 4px 16px rgba(26, 26, 26, 0.07);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 * { box-sizing: border-box; }
@@ -176,6 +176,11 @@ h1, h2, h3 {
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
+.field input::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
 .hint {
   font-size: 12px;
   color: var(--muted);
@@ -203,7 +208,7 @@ h1, h2, h3 {
 
 .btn-primary {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
 }
 .btn-primary:hover { background: var(--primary-dark); }
 
@@ -310,9 +315,9 @@ h1, h2, h3 {
   font-weight: 600;
 }
 
-.status-pill.ok { background: var(--success-soft); color: var(--primary-dark); }
+.status-pill.ok { background: var(--success-soft); color: var(--success); }
 .status-pill.fail { background: var(--danger-soft); color: var(--danger); }
-.status-pill.pending { background: var(--accent-soft); color: #8A5A15; }
+.status-pill.pending { background: var(--accent-soft); color: var(--accent); }
 
 /* 방문 이력 리스트 */
 .visit-row {
@@ -360,7 +365,7 @@ h1, h2, h3 {
   bottom: 24px;
   transform: translateX(-50%);
   background: var(--ink);
-  color: #fff;
+  color: var(--bg);
   padding: 12px 20px;
   border-radius: var(--radius-sm);
   font-size: 13px;
