@@ -55,16 +55,19 @@
     <!-- 1. 로그인 전: 이름/이메일로 접근 요청 -->
     <div id="login-view">
       <p class="page-title">담당자 로그인</p>
-      <p class="page-sub">이름과 회사 이메일을 입력하세요. 처음 요청하면 관리자 승인이 필요해요.</p>
+      <p class="page-sub">이름과 회사 이메일을 입력하세요.<br/>처음 요청하면 관리자 승인이 필요해요.</p>
 
       <div class="card">
         <div class="field">
           <label for="sv-name">이름</label>
-          <input type="text" id="sv-name" placeholder="예: 김수퍼" />
+          <input type="text" id="sv-name" />
         </div>
         <div class="field">
           <label for="sv-email">회사 이메일</label>
-          <input type="email" id="sv-email" placeholder="예: hong@company.com" />
+          <div class="field-suffix-group">
+            <input type="text" id="sv-email-id" placeholder="아이디" />
+            <span class="field-suffix">@kiyoung.co.kr</span>
+          </div>
         </div>
         <button class="btn btn-primary" onclick="handleRequestAccess()">접속 요청하기</button>
         <p class="hint" id="login-error" style="margin-top:10px; color:var(--danger);"></p>
@@ -87,18 +90,18 @@
       <p class="page-title">안녕하세요, <span id="welcome-name"></span>님</p>
       <p class="page-sub">가맹점의 QR CODE를 스캔하세요.</p>
 
-      <a href="scan.html" style="text-decoration:none;">
+      <a href="scan.html" style="text-decoration:none; color:inherit;">
         <div class="card" style="text-align:center; padding:32px 20px;">
           <div style="font-size:40px; margin-bottom:8px;">📷</div>
-          <div style="font-weight:600; font-size:16px;">QR SCAN</div>
+          <div style="font-weight:700; font-size:16px; color:var(--primary); letter-spacing:0.03em;">QR SCAN</div>
         </div>
       </a>
 
       <div class="btn-row" style="margin-top:8px;">
-        <a href="history.html" style="text-decoration:none; flex:1;">
+        <a href="history.html" style="text-decoration:none; color:inherit; flex:1;">
           <button class="btn btn-secondary">방문 이력</button>
         </a>
-        <a href="store-lookup.html" style="text-decoration:none; flex:1;">
+        <a href="store-lookup.html" style="text-decoration:none; color:inherit; flex:1;">
           <button class="btn btn-secondary">QRCODE 설치</button>
         </a>
       </div>
@@ -130,18 +133,20 @@
 
   async function handleRequestAccess() {
     const name = document.getElementById("sv-name").value.trim();
-    const email = document.getElementById("sv-email").value.trim();
+    const emailId = document.getElementById("sv-email-id").value.trim();
     const errorEl = document.getElementById("login-error");
     errorEl.textContent = "";
 
-    if (!name || !email) {
-      errorEl.textContent = "이름과 이메일을 모두 입력해주세요.";
+    if (!name || !emailId) {
+      errorEl.textContent = "이름과 이메일 아이디를 모두 입력해주세요.";
       return;
     }
-    if (!email.includes("@")) {
-      errorEl.textContent = "올바른 이메일 형식이 아니에요.";
+    if (emailId.includes("@")) {
+      errorEl.textContent = "아이디만 입력해주세요 (@kiyoung.co.kr은 자동으로 붙어요).";
       return;
     }
+
+    const email = `${emailId}@kiyoung.co.kr`;
 
     try {
       const result = await apiPost({ action: "requestAccess", name, email });
