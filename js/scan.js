@@ -112,10 +112,19 @@ async function handleStoreQr(storeId, qrWindow) {
   );
 }
 
-// GPS까지 확인했으면, 바로 저장하지 않고 "매장 사진 촬영" 단계로 넘어갑니다.
-function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qrWindow) {
+// GPS까지 확인했으면, 이번 스캔이 입장인지 퇴장인지 확인한 뒤 "매장 사진 촬영" 단계로 넘어갑니다.
+async function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qrWindow) {
   const distance = getDistanceMeters(myLat, myLng, storeDoc.lat, storeDoc.lng);
   const locationOk = distance <= VISIT_RADIUS_METERS;
+
+  let sessionType = "checkin"; // 기본값: 입장
+  try {
+    const status = await apiGet({ action: "getSessionStatus", svId: sv.email, storeId });
+    sessionType = status.checkedIn ? "checkout" : "checkin";
+  } catch (e) {
+    console.error(e);
+    // 조회 실패해도 기본값(입장)으로 진행. 실제 판단은 서버가 저장 시점에 다시 확정합니다.
+  }
 
   pendingVisit = {
     storeId,
@@ -125,7 +134,8 @@ function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qrWindow
     qrWindow,
     myLat,
     myLng,
-    accuracy
+    accuracy,
+    sessionType
   };
 
   // 사진 상태 초기화
@@ -138,10 +148,18 @@ function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qrWindow
   document.getElementById("photo-submit-btn").disabled = true;
   document.getElementById("photo-uploading-msg").style.display = "none";
 
+  const isCheckout = sessionType === "checkout";
+  document.getElementById("photo-empty-box").querySelector(".hint").innerHTML =
+    isCheckout
+      ? "매장 내부(POS 화면 등)를 촬영해주세요.<br/>퇴장 확인 증거 자료로 저장돼요."
+      : "매장 내부(POS 화면 등)를 촬영해주세요.<br/>입장 확인 증거 자료로 저장돼요.";
+  document.getElementById("photo-submit-btn").textContent = isCheckout ? "퇴장 등록 완료" : "입장 등록 완료";
+
   document.getElementById("step-gps").style.display = "none";
   document.getElementById("step-photo").style.display = "block";
-  document.getElementById("step-desc").textContent = "매장 사진을 촬영해주세요.";
-  document.getElementById("photo-store-name").textContent = storeDoc.name;
+  document.getElementById("step-desc").textContent = isCheckout ? "퇴장 사진을 촬영해주세요." : "입장 사진을 촬영해주세요.";
+  document.getElementById("photo-store-name").textContent =
+    `${storeDoc.name} · ${isCheckout ? "퇴장" : "입장"}`;
 }
 
 // 사진 파일 선택(촬영) 시: 리사이즈해서 base64로 변환, 미리보기 표시
@@ -181,7 +199,7 @@ function handlePhotoSelected(event) {
   event.target.value = ""; // 같은 파일 다시 선택해도 change 이벤트가 발생하도록 초기화
 }
 
-// "방문 등록 완료" 버튼: 사진과 함께 최종 저장
+// "입장/퇴장 등록 완료" 버튼: 사진과 함께 최종 저장
 async function submitVisitWithPhoto() {
   if (!pendingVisit || !capturedPhotoBase64) {
     showToast("사진을 먼저 촬영해주세요.");
@@ -193,6 +211,8 @@ async function submitVisitWithPhoto() {
 
   const v = pendingVisit;
   let qrValid = true;
+  let resultType = v.sessionType;
+  let durationMinutes = null;
 
   try {
     const saveResult = await apiPost({
@@ -213,21 +233,29 @@ async function submitVisitWithPhoto() {
     if (typeof saveResult.qrValid === "boolean") {
       qrValid = saveResult.qrValid;
     }
+    if (saveResult.type) {
+      resultType = saveResult.type; // 서버가 저장 시점에 최종 확정한 값(입장/퇴장)
+    }
+    if (typeof saveResult.durationMinutes === "number") {
+      durationMinutes = saveResult.durationMinutes;
+    }
   } catch (e) {
     console.error(e);
     showToast("방문 기록 저장에 실패했습니다.");
   }
 
   document.getElementById("photo-uploading-msg").style.display = "none";
-  showResult(v.storeName, v.distance, v.locationOk, qrValid);
+  showResult(v.storeName, v.distance, v.locationOk, qrValid, resultType, durationMinutes);
 }
 
-function showResult(storeName, distance, locationOk, qrValid) {
+function showResult(storeName, distance, locationOk, qrValid, sessionType, durationMinutes) {
   document.getElementById("step-photo").style.display = "none";
   document.getElementById("step-result").style.display = "block";
   document.getElementById("step-desc").textContent = "방문 등록이 완료되었습니다.";
 
-  document.getElementById("result-store-name").textContent = storeName;
+  const isCheckout = sessionType === "checkout";
+  document.getElementById("result-store-name").textContent =
+    `${storeName} · ${isCheckout ? "퇴장" : "입장"}`;
   document.getElementById("result-distance").textContent = `${Math.round(distance)}m`;
 
   const badge = document.getElementById("result-badge");
@@ -242,8 +270,12 @@ function showResult(storeName, distance, locationOk, qrValid) {
   } else if (locationOk) {
     badge.className = "gps-badge ok";
     pill.className = "status-pill ok";
-    pill.textContent = "✓ 방문 확인됨";
-    detail.textContent = `허용 반경 ${VISIT_RADIUS_METERS}m 이내에서 스캔되었습니다. 사진도 함께 저장됐어요.`;
+    pill.textContent = isCheckout ? "✓ 퇴장 확인됨" : "✓ 입장 확인됨";
+    const durationText =
+      isCheckout && typeof durationMinutes === "number"
+        ? ` 체류 시간은 약 ${durationMinutes}분이었어요.`
+        : "";
+    detail.textContent = `허용 반경 ${VISIT_RADIUS_METERS}m 이내에서 스캔되었습니다. 사진도 함께 저장됐어요.${durationText}`;
   } else {
     badge.className = "gps-badge fail";
     pill.className = "status-pill fail";

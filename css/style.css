@@ -361,11 +361,13 @@ h1, h2, h3 {
 .visit-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
   padding: 14px 0;
   border-bottom: 1px solid var(--border);
 }
 .visit-row:last-child { border-bottom: none; }
+.visit-row .status-pill { flex: 0 0 auto; white-space: nowrap; }
 
 .visit-row .store-name {
   font-weight: 600;
