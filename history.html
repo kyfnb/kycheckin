@@ -20,9 +20,9 @@
     <p class="page-title">방문 이력</p>
 
     <div class="btn-row" style="margin-bottom:16px;">
-      <button class="btn btn-secondary" id="view-list-btn" onclick="setView('list')">목록</button>
-      <button class="btn btn-secondary" id="view-calendar-btn" onclick="setView('calendar')">캘린더</button>
-      <button class="btn btn-secondary" id="view-unvisited-btn" onclick="setView('unvisited')">미방문 매장</button>
+      <button class="btn btn-secondary" id="view-list-btn" onclick="setView('list')">목 록</button>
+      <button class="btn btn-secondary" id="view-calendar-btn" onclick="setView('calendar')">방문<br/>캘린더</button>
+      <button class="btn btn-secondary" id="view-unvisited-btn" onclick="setView('unvisited')">미방문<br/>매장</button>
     </div>
 
     <!-- ===== 1) 목록 뷰 ===== -->
@@ -46,7 +46,7 @@
       </div>
 
       <div class="btn-row" style="margin-bottom:16px;" id="filter-row">
-        <button class="btn btn-secondary" id="filter-mine" onclick="setFilter('mine')">내 방문만</button>
+        <button class="btn btn-secondary" id="filter-mine" onclick="setFilter('mine')">담당매장</button>
         <button class="btn btn-secondary" id="filter-all" onclick="setFilter('all')">전체 보기</button>
       </div>
 
@@ -78,7 +78,25 @@
 
     <!-- ===== 3) 미방문 매장 뷰 ===== -->
     <div id="unvisited-view" style="display:none;">
-      <p class="page-sub" id="unvisited-sub">최근 60일간 방문하지 않은 담당 매장이에요.</p>
+      <p class="page-sub">최근 60일간 방문하지 않은 담당 매장이에요.</p>
+
+      <div class="card" id="unvisited-stats" style="display:none;">
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-value" id="stat-total">-</div>
+            <div class="stat-label">담당 매장</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="stat-visited">-</div>
+            <div class="stat-label">방문</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="stat-unvisited">-</div>
+            <div class="stat-label">미방문</div>
+          </div>
+        </div>
+      </div>
+
       <div class="card" id="unvisited-card">
         <div id="unvisited-list"></div>
         <div class="empty-state" id="unvisited-empty" style="display:none;">
