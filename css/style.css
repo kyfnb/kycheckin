@@ -61,6 +61,49 @@ h1, h2, h3 {
   flex-direction: column;
 }
 
+/* "점검중" 상태 배너 */
+.active-session-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+}
+
+.active-session-banner .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bg);
+  flex: 0 0 auto;
+  animation: session-dot-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes session-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+body.has-session-banner .app-shell {
+  padding-top: 38px;
+}
+
+body.has-session-banner .topbar,
+body.has-session-banner .brand-header {
+  top: 38px;
+}
+
 /* 상단바 */
 .topbar {
   display: flex;
@@ -369,6 +412,32 @@ h1, h2, h3 {
 .visit-row:last-child { border-bottom: none; }
 .visit-row .status-pill { flex: 0 0 auto; white-space: nowrap; }
 
+/* 관리자 전용 액션(방문 이력 수정/삭제) */
+.visit-row-wrapper {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+.visit-row-wrapper:last-child { border-bottom: none; }
+.visit-row-wrapper .visit-row { border-bottom: none; padding-bottom: 6px; }
+
+.admin-action-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+}
+.admin-action-btn {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.admin-action-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
 .visit-row .store-name {
   font-weight: 600;
   font-size: 14px;
@@ -378,6 +447,65 @@ h1, h2, h3 {
   color: var(--muted);
   margin-top: 2px;
   font-family: 'IBM Plex Mono', monospace;
+}
+
+/* 캘린더 뷰 */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-weekday-label {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  padding-bottom: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.calendar-day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.calendar-day-cell:hover {
+  border-color: var(--primary);
+}
+
+.calendar-day-cell.empty {
+  visibility: hidden;
+  cursor: default;
+}
+
+.calendar-day-cell.has-visit {
+  color: var(--ink);
+  font-weight: 700;
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.calendar-day-cell .visit-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/* 날짜 입력(직접입력 기간) */
+.field input[type="date"] {
+  color-scheme: dark;
 }
 
 /* 빈 상태 */

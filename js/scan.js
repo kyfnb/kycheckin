@@ -112,7 +112,9 @@ async function handleStoreQr(storeId, qrWindow) {
   );
 }
 
-// GPS까지 확인했으면, 이번 스캔이 입장인지 퇴장인지 확인한 뒤 "매장 사진 촬영" 단계로 넘어갑니다.
+// GPS까지 확인했으면, 이번 스캔이 입장인지 퇴장인지 확인합니다.
+// 입장 → 사진 촬영 단계로 이동 (사진 필수)
+// 퇴장 → 사진 없이 바로 저장 (QR + GPS만으로 충분)
 async function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qrWindow) {
   const distance = getDistanceMeters(myLat, myLng, storeDoc.lat, storeDoc.lng);
   const locationOk = distance <= VISIT_RADIUS_METERS;
@@ -138,7 +140,16 @@ async function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qr
     sessionType
   };
 
-  // 사진 상태 초기화
+  if (sessionType === "checkout") {
+    // 퇴장은 사진 없이 바로 처리
+    document.getElementById("step-desc").textContent = "퇴장 처리 중…";
+    capturedPhotoBase64 = null;
+    capturedPhotoMimeType = null;
+    await finalizeVisit();
+    return;
+  }
+
+  // 입장은 사진 촬영 필수
   capturedPhotoBase64 = null;
   capturedPhotoMimeType = null;
   document.getElementById("photo-preview-box").style.display = "none";
@@ -147,19 +158,14 @@ async function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qr
   document.getElementById("photo-retake-btn").style.display = "none";
   document.getElementById("photo-submit-btn").disabled = true;
   document.getElementById("photo-uploading-msg").style.display = "none";
-
-  const isCheckout = sessionType === "checkout";
   document.getElementById("photo-empty-box").querySelector(".hint").innerHTML =
-    isCheckout
-      ? "매장 내부(POS 화면 등)를 촬영해주세요.<br/>퇴장 확인 증거 자료로 저장돼요."
-      : "매장 내부(POS 화면 등)를 촬영해주세요.<br/>입장 확인 증거 자료로 저장돼요.";
-  document.getElementById("photo-submit-btn").textContent = isCheckout ? "퇴장 등록 완료" : "입장 등록 완료";
+    "매장 내부(POS 화면 등)를 촬영해주세요.";
+  document.getElementById("photo-submit-btn").textContent = "입장 등록 완료";
 
   document.getElementById("step-gps").style.display = "none";
   document.getElementById("step-photo").style.display = "block";
-  document.getElementById("step-desc").textContent = isCheckout ? "퇴장 사진을 촬영해주세요." : "입장 사진을 촬영해주세요.";
-  document.getElementById("photo-store-name").textContent =
-    `${storeDoc.name} · ${isCheckout ? "퇴장" : "입장"}`;
+  document.getElementById("step-desc").textContent = "입장 사진을 촬영해주세요.";
+  document.getElementById("photo-store-name").textContent = `${storeDoc.name} · 입장`;
 }
 
 // 사진 파일 선택(촬영) 시: 리사이즈해서 base64로 변환, 미리보기 표시
@@ -199,7 +205,7 @@ function handlePhotoSelected(event) {
   event.target.value = ""; // 같은 파일 다시 선택해도 change 이벤트가 발생하도록 초기화
 }
 
-// "입장/퇴장 등록 완료" 버튼: 사진과 함께 최종 저장
+// "입장 등록 완료" 버튼(입장만 해당, 퇴장은 사진 없이 자동 처리됨)
 async function submitVisitWithPhoto() {
   if (!pendingVisit || !capturedPhotoBase64) {
     showToast("사진을 먼저 촬영해주세요.");
@@ -209,6 +215,14 @@ async function submitVisitWithPhoto() {
   document.getElementById("photo-submit-btn").disabled = true;
   document.getElementById("photo-uploading-msg").style.display = "block";
 
+  await finalizeVisit();
+
+  document.getElementById("photo-uploading-msg").style.display = "none";
+}
+
+// 실제 저장 처리 (입장: 사진 포함 / 퇴장: 사진 없이). 입장 성공 시 "점검중" 배너를 켜고,
+// 퇴장 성공 시 배너를 꺼줍니다.
+async function finalizeVisit() {
   const v = pendingVisit;
   let qrValid = true;
   let resultType = v.sessionType;
@@ -239,12 +253,19 @@ async function submitVisitWithPhoto() {
     if (typeof saveResult.durationMinutes === "number") {
       durationMinutes = saveResult.durationMinutes;
     }
+
+    if (saveResult.success) {
+      if (resultType === "checkin") {
+        setActiveSession({ storeId: v.storeId, storeName: v.storeName, checkInAt: new Date().toISOString() });
+      } else if (resultType === "checkout") {
+        clearActiveSession();
+      }
+    }
   } catch (e) {
     console.error(e);
     showToast("방문 기록 저장에 실패했습니다.");
   }
 
-  document.getElementById("photo-uploading-msg").style.display = "none";
   showResult(v.storeName, v.distance, v.locationOk, qrValid, resultType, durationMinutes);
 }
 
@@ -275,7 +296,8 @@ function showResult(storeName, distance, locationOk, qrValid, sessionType, durat
       isCheckout && typeof durationMinutes === "number"
         ? ` 체류 시간은 약 ${durationMinutes}분이었어요.`
         : "";
-    detail.textContent = `허용 반경 ${VISIT_RADIUS_METERS}m 이내에서 스캔되었습니다. 사진도 함께 저장됐어요.${durationText}`;
+    const photoText = isCheckout ? "" : " 사진도 함께 저장됐어요.";
+    detail.textContent = `허용 반경 ${VISIT_RADIUS_METERS}m 이내에서 스캔되었습니다.${photoText}${durationText}`;
   } else {
     badge.className = "gps-badge fail";
     pill.className = "status-pill fail";

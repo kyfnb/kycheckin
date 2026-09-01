@@ -99,3 +99,70 @@ async function apiPost(data) {
 
 // ---- 방문 허용 반경(m). 필요에 따라 조정하세요 ----
 const VISIT_RADIUS_METERS = 100;
+
+/* ========================================
+   "점검중" 상태 배너 (활성 세션 표시)
+   입장을 찍으면 켜지고, 퇴장을 찍으면 꺼집니다.
+   앱 안 어느 화면에 있든 상단에 계속 보여서, 지금 방문 중인 매장을
+   바로 확인할 수 있게 해줍니다. 탭하면 스캔 화면(퇴장 찍기)으로 이동해요.
+   ======================================== */
+
+const ACTIVE_SESSION_KEY = "active_session";
+
+function setActiveSession(session) {
+  localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(session));
+}
+
+function getActiveSession() {
+  const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+
+function clearActiveSession() {
+  localStorage.removeItem(ACTIVE_SESSION_KEY);
+}
+
+let __sessionBannerTimer = null;
+
+function renderActiveSessionBanner() {
+  // 매장 QR 표시 화면(store-display.html)에는 배너를 띄우지 않습니다.
+  if (document.body.dataset.appPage === "kiosk") return;
+
+  const existing = document.getElementById("active-session-banner");
+  if (existing) existing.remove();
+  if (__sessionBannerTimer) {
+    clearInterval(__sessionBannerTimer);
+    __sessionBannerTimer = null;
+  }
+
+  const session = getActiveSession();
+  document.body.classList.toggle("has-session-banner", !!session);
+  if (!session) return;
+
+  const banner = document.createElement("a");
+  banner.id = "active-session-banner";
+  banner.className = "active-session-banner";
+  banner.href = "scan.html";
+
+  function escapeText(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+
+  function updateText() {
+    const elapsedMs = Date.now() - new Date(session.checkInAt).getTime();
+    const mins = Math.max(0, Math.floor(elapsedMs / 60000));
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const elapsedStr = h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+    banner.innerHTML =
+      `<span class="dot"></span> ${escapeText(session.storeName)} 점검중 · ${elapsedStr} 경과 · 탭해서 퇴장 찍기`;
+  }
+
+  updateText();
+  document.body.prepend(banner);
+  __sessionBannerTimer = setInterval(updateText, 30000); // 30초마다 경과시간 갱신
+}
+
+document.addEventListener("DOMContentLoaded", renderActiveSessionBanner);

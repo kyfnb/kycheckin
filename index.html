@@ -152,7 +152,7 @@
       const result = await apiPost({ action: "requestAccess", name, email });
 
       if (result.approved) {
-        setCurrentSV({ name: result.name, email: result.email });
+        setCurrentSV({ name: result.name, email: result.email, role: result.role || "staff" });
         renderInitialView();
         return;
       }

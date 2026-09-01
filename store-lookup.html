@@ -18,7 +18,29 @@
 
   <div class="content">
     <p class="page-title">가맹점 QR 링크 찾기</p>
-    <p class="page-sub">매장정보에 등록된 가맹점을 검색해서, POS에 띄워둘 QR 화면 링크를 찾으세요.</p>
+    <p class="page-sub" id="page-sub-text">매장정보에 등록된 가맹점을 검색해서, POS에 띄워둘 QR 화면 링크를 찾으세요.</p>
+
+    <!-- 리더/관리자 전용 필터 (담당자는 안 보임) -->
+    <div class="card" id="filter-card" style="display:none;">
+      <div class="field">
+        <label for="filter-brand">브랜드</label>
+        <select id="filter-brand" onchange="handleSearch()">
+          <option value="">전체</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-team">팀</label>
+        <select id="filter-team" onchange="handleSearch()">
+          <option value="">전체</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="filter-manager">담당자</label>
+        <select id="filter-manager" onchange="handleSearch()">
+          <option value="">전체</option>
+        </select>
+      </div>
+    </div>
 
     <div class="card">
       <div class="field" style="margin-bottom:0;">
@@ -40,7 +62,7 @@
         <p class="mono hint" id="kiosk-store-id"></p>
         <p class="hint" style="margin-top:12px;">
           아래 링크를 매장 POS 브라우저에서 열고, 그 화면을 그대로 켜두세요.<br/>
-          QR코드가 30초마다 자동으로 바뀌면서 위·변조를 막아줘요.
+          QR코드가 1분마다 자동으로 바뀌면서 위·변조를 막아줘요.
         </p>
       </div>
 
