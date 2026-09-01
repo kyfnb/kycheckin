@@ -1,0 +1,364 @@
+/* ========================================
+   가맹점 방문 확인 시스템 - 공통 스타일
+   톤: 현장에서 빠르게 쓰는 업무 도구. 화려함보다 명확함.
+   ======================================== */
+
+:root {
+  --bg: #F5F6F4;
+  --surface: #FFFFFF;
+  --ink: #1C2321;
+  --muted: #6B7570;
+  --border: #DFE3E0;
+
+  --primary: #146B5C;
+  --primary-dark: #0E4F44;
+  --primary-soft: #E4EFEC;
+
+  --accent: #E8A33D;
+  --accent-soft: #FBF0DC;
+
+  --danger: #C1443B;
+  --danger-soft: #FBE9E7;
+
+  --success: #146B5C;
+  --success-soft: #E4EFEC;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --shadow: 0 1px 2px rgba(28, 35, 33, 0.06), 0 4px 16px rgba(28, 35, 33, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px 0;
+}
+
+.mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단바 */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar .eyebrow {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.topbar .who {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.topbar .who strong { color: var(--ink); }
+
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 본문 */
+.content {
+  flex: 1;
+  padding: 24px 20px 40px;
+}
+
+.page-title {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.page-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* 카드 */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* 폼 요소 */
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.field input, .field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* 버튼 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.06s ease, opacity 0.15s ease;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+.btn-row .btn { width: auto; flex: 1; }
+
+/* 하단 탭 네비게이션 */
+.tabbar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  bottom: 0;
+}
+
+.tabbar a {
+  flex: 1;
+  text-align: center;
+  padding: 12px 4px 10px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.tabbar a.active { color: var(--primary); }
+
+.tabbar .icon { font-size: 20px; }
+
+/* GPS 검증 배지 - 시그니처 요소 */
+.gps-badge {
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  margin: 8px auto 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 6px solid var(--border);
+  transition: border-color 0.3s ease, background 0.3s ease;
+  background: var(--surface);
+}
+
+.gps-badge.ok {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+
+.gps-badge.fail {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.gps-badge.pending {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.gps-badge .dist-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.gps-badge .dist-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* 상태 배지(라벨) */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pill.ok { background: var(--success-soft); color: var(--primary-dark); }
+.status-pill.fail { background: var(--danger-soft); color: var(--danger); }
+.status-pill.pending { background: var(--accent-soft); color: #8A5A15; }
+
+/* 방문 이력 리스트 */
+.visit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.visit-row:last-child { border-bottom: none; }
+
+.visit-row .store-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.visit-row .meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* 빈 상태 */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+}
+.empty-state .big-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+/* QR 리더 영역 */
+#qr-reader {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+/* 토스트 메시지 */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  max-width: 90%;
+  text-align: center;
+}
+
+/* 인쇄용 QR 카드 (register-store) */
+.qr-print-card {
+  text-align: center;
+  padding: 24px;
+  background: #fff;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .app-shell { max-width: none; }
+}

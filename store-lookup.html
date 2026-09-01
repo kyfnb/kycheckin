@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>가맹점 QR 링크 찾기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="topbar">
+    <a href="index.html" class="back-link">← 메뉴</a>
+    <div class="who">담당자: <strong id="sv-name-label"></strong></div>
+  </div>
+
+  <div class="content">
+    <p class="page-title">가맹점 QR 링크 찾기</p>
+    <p class="page-sub">매장정보에 등록된 가맹점을 검색해서, POS에 띄워둘 QR 화면 링크를 찾으세요.</p>
+
+    <div class="card">
+      <div class="field" style="margin-bottom:0;">
+        <label for="search-input">브랜드 / 매장명 / 코드로 검색</label>
+        <div class="btn-row">
+          <input type="text" id="search-input" placeholder="예: 두찜 대전, 또는 twozzim833" />
+          <button class="btn btn-primary" style="flex:0 0 auto; width:auto; padding:12px 18px;" onclick="handleSearch()">검색</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="search-results"></div>
+
+    <!-- 선택한 매장의 QR 링크 -->
+    <div id="kiosk-result" style="display:none;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px; margin-bottom:8px;">✅</div>
+        <h2 style="font-size:16px;" id="kiosk-store-name"></h2>
+        <p class="mono hint" id="kiosk-store-id"></p>
+        <p class="hint" style="margin-top:12px;">
+          아래 링크를 매장 POS 브라우저에서 열고, 그 화면을 그대로 켜두세요.<br/>
+          QR코드가 30초마다 자동으로 바뀌면서 위·변조를 막아줘요.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label>매장 QR 화면 링크</label>
+          <input type="text" id="kiosk-link" readonly />
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="copyKioskLink()">링크 복사</button>
+          <a id="kiosk-open-link" href="#" target="_blank" style="text-decoration:none; flex:1;">
+            <button class="btn btn-primary">새 탭에서 열기</button>
+          </a>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="resetSearch()">다른 매장 찾기</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/sheets-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/store-lookup.js"></script>
+
+</body>
+</html>

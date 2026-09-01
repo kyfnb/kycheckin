@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>방문 이력</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="topbar">
+    <a href="index.html" class="back-link">← 메뉴</a>
+    <div class="who">담당자: <strong id="sv-name-label"></strong></div>
+  </div>
+
+  <div class="content">
+    <p class="page-title">방문 이력</p>
+    <p class="page-sub">최근 방문 기록입니다.</p>
+
+    <div class="btn-row" style="margin-bottom:16px;">
+      <button class="btn btn-secondary" id="filter-mine" onclick="setFilter('mine')">내 방문만</button>
+      <button class="btn btn-secondary" id="filter-all" onclick="setFilter('all')">전체 보기</button>
+    </div>
+
+    <div class="card" id="visit-list-card">
+      <div id="visit-list"></div>
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <div class="big-icon">🗂</div>
+        <div>아직 방문 기록이 없습니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/sheets-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/history.js"></script>
+
+</body>
+</html>

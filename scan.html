@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>QR 스캔 · 방문 등록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="topbar">
+    <a href="index.html" class="back-link">← 메뉴</a>
+    <div class="who">담당자: <strong id="sv-name-label"></strong></div>
+  </div>
+
+  <div class="content">
+    <p class="page-title">방문 등록</p>
+    <p class="page-sub" id="step-desc">가맹점 QR코드를 화면에 비춰주세요.</p>
+
+    <!-- 1단계: QR 스캔 -->
+    <div id="step-scan">
+      <div id="qr-reader"></div>
+      <p class="hint" style="text-align:center; margin-top:12px;">카메라 권한을 허용해야 스캔할 수 있어요.</p>
+    </div>
+
+    <!-- 2단계: GPS 확인 중 -->
+    <div id="step-gps" style="display:none; text-align:center;">
+      <div class="card">
+        <div class="gps-badge pending" id="gps-badge">
+          <div class="dist-value">…</div>
+          <div class="dist-label">위치 확인 중</div>
+        </div>
+        <div id="store-name-display" style="font-weight:600; font-size:16px;"></div>
+        <p class="hint">휴대폰 위치 권한을 확인하고 있어요.</p>
+      </div>
+    </div>
+
+    <!-- 3단계: 결과 -->
+    <div id="step-result" style="display:none;">
+      <div class="card" style="text-align:center;">
+        <div class="gps-badge" id="result-badge">
+          <div class="dist-value" id="result-distance">-</div>
+          <div class="dist-label">가맹점과의 거리</div>
+        </div>
+        <div style="font-weight:700; font-size:17px; margin-bottom:4px;" id="result-store-name"></div>
+        <span class="status-pill" id="result-pill"></span>
+        <p class="hint" id="result-detail" style="margin-top:12px;"></p>
+      </div>
+
+      <button class="btn btn-primary" onclick="resetScan()">다른 가맹점 계속 스캔</button>
+      <a href="index.html" style="text-decoration:none;">
+        <button class="btn btn-ghost" style="margin-top:10px;">메뉴로 돌아가기</button>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/sheets-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/scan.js"></script>
+
+</body>
+</html>

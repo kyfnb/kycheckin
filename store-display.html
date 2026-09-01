@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>매장 QR 화면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  /* POS 화면에 종일 띄워둘 화면이라 최대한 단순하고 눈에 잘 띄게 */
+  body { background: var(--primary); }
+  .kiosk-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .kiosk-store-name {
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+  .kiosk-qr-box {
+    background: #fff;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .kiosk-caption {
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+    margin-top: 24px;
+  }
+  .kiosk-timer-track {
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 999px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .kiosk-timer-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 999px;
+    width: 100%;
+    transition: width 1s linear;
+  }
+  .kiosk-error {
+    color: #fff;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div class="kiosk-shell">
+  <div id="store-loading" class="kiosk-error">매장 정보를 불러오는 중…</div>
+
+  <div id="kiosk-content" style="display:none;">
+    <div class="kiosk-store-name" id="kiosk-store-name"></div>
+    <div class="kiosk-qr-box">
+      <div id="qr-code-box"></div>
+    </div>
+    <div class="kiosk-caption">이 화면을 그대로 켜두세요 · QR은 30초마다 자동 갱신됩니다</div>
+    <div class="kiosk-timer-track"><div class="kiosk-timer-fill" id="timer-fill"></div></div>
+  </div>
+</div>
+
+<script src="js/sheets-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/store-display.js"></script>
+
+</body>
+</html>

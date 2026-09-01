@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>가맹점 등록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="topbar">
+    <a href="index.html" class="back-link no-print">← 메뉴</a>
+    <div class="who no-print">담당자: <strong id="sv-name-label"></strong></div>
+  </div>
+
+  <div class="content">
+    <p class="page-title no-print">가맹점 등록</p>
+    <p class="page-sub no-print">가맹점을 등록하면 QR코드가 생성돼요. 출력해서 POS기 옆에 부착하세요.</p>
+
+    <div class="card no-print">
+      <div class="field">
+        <label for="store-name">가맹점명</label>
+        <input type="text" id="store-name" placeholder="예: 강남역점" />
+      </div>
+      <div class="field">
+        <label for="store-id">가맹점 코드</label>
+        <input type="text" id="store-id" placeholder="예: GN-001 (영문/숫자, 중복 불가)" />
+      </div>
+
+      <div class="field">
+        <label>가맹점 위치(위·경도)</label>
+        <div class="btn-row" style="margin-bottom:8px;">
+          <button type="button" class="btn btn-secondary" onclick="useCurrentLocation()">📍 현재 위치로 등록</button>
+        </div>
+        <div class="btn-row">
+          <input type="text" id="store-lat" placeholder="위도" />
+          <input type="text" id="store-lng" placeholder="경도" />
+        </div>
+        <p class="hint">가맹점 현장에서 "현재 위치로 등록"을 누르면 자동으로 채워집니다.</p>
+      </div>
+
+      <button class="btn btn-primary" onclick="registerStore()">가맹점 등록하고 QR 생성</button>
+    </div>
+
+    <!-- 생성된 QR (인쇄 가능) -->
+    <div id="qr-result" style="display:none;">
+      <div class="qr-print-card">
+        <h2 style="font-size:16px;" id="qr-store-name"></h2>
+        <div id="qr-code-box" style="display:flex; justify-content:center; margin:16px 0;"></div>
+        <p class="mono hint" id="qr-store-id"></p>
+        <p class="hint">이 QR코드를 매장 POS기 근처에 부착하세요.</p>
+      </div>
+      <button class="btn btn-primary no-print" style="margin-top:16px;" onclick="window.print()">🖨 인쇄하기</button>
+      <button class="btn btn-ghost no-print" style="margin-top:10px;" onclick="resetForm()">다른 가맹점 등록</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/sheets-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/register-store.js"></script>
+
+</body>
+</html>
