@@ -271,7 +271,7 @@ h1, h2, h3 {
   display: flex;
   gap: 10px;
 }
-.btn-row .btn { width: auto; flex: 1; }
+.btn-row > .btn { width: auto; flex: 1; }
 
 /* 하단 탭 네비게이션 */
 .tabbar {
