@@ -8,7 +8,8 @@ if (sv) {
   document.getElementById("sv-name-label").textContent = sv.name;
 }
 
-const isPrivilegedHistory = sv && (sv.role === "leader" || sv.role === "admin");
+const isPrivilegedHistory = sv && (sv.role === "leader" || sv.role === "head" || sv.role === "admin"); // "전체 보기" 노출 여부
+const canUseFilters = sv && (sv.role === "head" || sv.role === "admin"); // 브랜드/팀/담당자 필터 노출 여부 (리더는 이미 팀이 고정이라 필터 자체가 필요없음)
 const isAdminUser = sv && sv.role === "admin";
 
 // 담당자(staff)는 "내 방문만"만 볼 수 있고, "전체 보기" 자체가 안 보입니다.
@@ -16,12 +17,13 @@ if (!isPrivilegedHistory) {
   document.getElementById("filter-all").style.display = "none";
 }
 
-// 리더/관리자는 브랜드·팀·담당자 필터를 쓸 수 있습니다 (브랜드 → 팀 → 담당자 순으로 연동됨).
+// Head/관리자는 브랜드·팀·담당자 필터를 쓸 수 있습니다 (브랜드 → 팀 → 담당자 순으로 연동됨).
+// 리더는 이미 본인 팀으로 고정되어 있어서 필터 UI 자체를 보여주지 않습니다 (서버가 강제로 범위를 제한함).
 let currentBrandFilter = "";
 let currentTeamFilter = "";
 let currentManagerFilter = "";
 
-if (isPrivilegedHistory) {
+if (canUseFilters) {
   document.getElementById("team-manager-filter-card").style.display = "block";
   loadBrandOptions();
   loadTeamManagerOptions();
@@ -36,7 +38,7 @@ function normalizeTeamLabel(raw) {
 
 async function loadBrandOptions() {
   try {
-    const result = await apiGet({ action: "getFilterOptions" });
+    const result = await apiGet({ action: "getFilterOptions", svId: sv.email });
     fillFilterSelect("history-brand-filter", result.brands || []);
   } catch (e) {
     console.error(e);
@@ -48,6 +50,7 @@ async function loadTeamManagerOptions() {
   try {
     const result = await apiGet({
       action: "getFilterOptions",
+      svId: sv.email,
       brand: currentBrandFilter,
       team: currentTeamFilter
     });
@@ -475,11 +478,10 @@ async function loadUnvisited() {
   try {
     const result = await apiGet({
       action: "getUnvisitedStores",
-      svName: sv.name,
-      isPrivileged: isPrivilegedHistory ? "true" : "false",
-      brand: isPrivilegedHistory ? currentBrandFilter : "",
-      team: isPrivilegedHistory ? currentTeamFilter : "",
-      manager: isPrivilegedHistory ? currentManagerFilter : ""
+      svId: sv.email,
+      brand: canUseFilters ? currentBrandFilter : "",
+      team: canUseFilters ? currentTeamFilter : "",
+      manager: canUseFilters ? currentManagerFilter : ""
     });
     const stores = result.stores || [];
 
