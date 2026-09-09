@@ -225,12 +225,9 @@ function renderVisitRow(v) {
   const checkInPhotoLink = v.checkInPhotoUrl
     ? `<a href="${v.checkInPhotoUrl}" target="_blank" style="color:var(--primary); text-decoration:underline;">입장사진</a>`
     : "";
-  const checkOutPhotoLink = v.checkOutPhotoUrl
-    ? `<a href="${v.checkOutPhotoUrl}" target="_blank" style="color:var(--primary); text-decoration:underline;">퇴장사진</a>`
-    : "";
-  const photoLinks = [checkInPhotoLink, checkOutPhotoLink].filter(Boolean).join(" · ");
+  const photoLinks = checkInPhotoLink;
 
-  let statusClass, statusText;
+  let statusClass, statusText, reasonLine = "";
   if (!hasCheckOut) {
     const hoursSinceCheckIn = (Date.now() - new Date(v.checkInAt).getTime()) / 3600000;
     if (hoursSinceCheckIn > 16) {
@@ -246,6 +243,16 @@ function renderVisitRow(v) {
   } else {
     statusClass = "fail";
     statusText = "⚠ 확인필요";
+
+    // 입장/퇴장 중 어느 쪽이, 위치 때문인지 QR 만료 때문인지 구체적으로 표시
+    const reasons = [];
+    if (!v.checkInVerified) {
+      reasons.push(v.checkInQrValid === false ? "입장 QR 만료" : "입장 위치 불일치");
+    }
+    if (!v.checkOutVerified) {
+      reasons.push(v.checkOutQrValid === false ? "퇴장 QR 만료" : "퇴장 위치 불일치");
+    }
+    if (reasons.length) reasonLine = `<div class="meta" style="color:var(--danger);">${reasons.join(" · ")}</div>`;
   }
 
   const metaLine1 = `입장 ${checkInWhen} (${v.checkInDistance}m)`;
@@ -259,6 +266,7 @@ function renderVisitRow(v) {
       <div class="meta">${metaLine1}</div>
       <div class="meta">${metaLine2}</div>
       <div class="meta">${escapeHtml(v.svName)}${photoLinks ? " · " + photoLinks : ""}</div>
+      ${reasonLine}
     </div>
 
     <span class="status-pill ${statusClass}">${statusText}</span>
