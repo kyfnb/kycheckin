@@ -47,7 +47,6 @@
 <div class="app-shell">
   <div class="brand-header">
     <img src="assets/logo-white.png" alt="KIYOUNG F&B" />
-    <div class="tagline">FRANCHISE VISIT LOG</div>
   </div>
 
   <div class="content">
@@ -102,8 +101,26 @@
           <button class="btn btn-secondary">방문 이력</button>
         </a>
         <a href="store-lookup.html" style="text-decoration:none; color:inherit; flex:1;">
-          <button class="btn btn-secondary">QR 설치방법</button>
+          <button class="btn btn-secondary">가맹점 QR 설치</button>
         </a>
+      </div>
+
+      <p class="page-title" style="font-size:15px; margin-top:28px;">이번달 방문 이력</p>
+      <div class="card" id="monthly-stats-card">
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-value" id="monthly-stat-total">-</div>
+            <div class="stat-label">담당매장</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="monthly-stat-visited">-</div>
+            <div class="stat-label">방문매장</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="monthly-stat-unvisited">-</div>
+            <div class="stat-label">미방문매장</div>
+          </div>
+        </div>
       </div>
 
       <button class="btn btn-ghost" style="margin-top:24px;" onclick="logoutSV()">로그아웃</button>
@@ -126,8 +143,21 @@
     if (sv) {
       showView("main");
       document.getElementById("welcome-name").textContent = sv.name;
+      loadMonthlyStats(sv);
     } else {
       showView("login");
+    }
+  }
+
+  async function loadMonthlyStats(sv) {
+    try {
+      const result = await apiGet({ action: "getMonthlyStoreStats", svName: sv.name });
+      document.getElementById("monthly-stat-total").textContent = result.totalAssigned ?? 0;
+      document.getElementById("monthly-stat-visited").textContent = result.visitedCount ?? 0;
+      document.getElementById("monthly-stat-unvisited").textContent = result.unvisitedCount ?? 0;
+    } catch (e) {
+      console.error(e);
+      // 실패해도 화면엔 그냥 "-"로 남겨두고 조용히 넘어감
     }
   }
 

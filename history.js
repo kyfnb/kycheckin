@@ -225,7 +225,10 @@ function renderVisitRow(v) {
   const checkInPhotoLink = v.checkInPhotoUrl
     ? `<a href="${v.checkInPhotoUrl}" target="_blank" style="color:var(--primary); text-decoration:underline;">입장사진</a>`
     : "";
-  const photoLinks = checkInPhotoLink;
+  const routeLink = v.visitId
+    ? `<a href="#" onclick="viewRoute('${v.visitId}'); return false;" style="color:var(--primary); text-decoration:underline;">이동경로</a>`
+    : "";
+  const photoLinks = [checkInPhotoLink, routeLink].filter(Boolean).join(" · ");
 
   let statusClass, statusText, reasonLine = "";
   if (!hasCheckOut) {
@@ -244,13 +247,26 @@ function renderVisitRow(v) {
     statusClass = "fail";
     statusText = "⚠ 확인필요";
 
-    // 입장/퇴장 중 어느 쪽이, 위치 때문인지 QR 만료 때문인지 구체적으로 표시
+    // 입장/퇴장 중 어느 쪽이, 위치 때문인지 QR 만료 때문인지 GPS 오차 때문인지 구체적으로 표시
+    const MAX_GPS_ACCURACY = 200;
     const reasons = [];
     if (!v.checkInVerified) {
-      reasons.push(v.checkInQrValid === false ? "입장 QR 만료" : "입장 위치 불일치");
+      if (v.checkInQrValid === false) {
+        reasons.push("입장 QR 만료");
+      } else if (typeof v.checkInGpsAccuracy === "number" && v.checkInGpsAccuracy > MAX_GPS_ACCURACY) {
+        reasons.push(`입장 GPS 오차 큼(${v.checkInGpsAccuracy}m)`);
+      } else {
+        reasons.push("입장 위치 불일치");
+      }
     }
     if (!v.checkOutVerified) {
-      reasons.push(v.checkOutQrValid === false ? "퇴장 QR 만료" : "퇴장 위치 불일치");
+      if (v.checkOutQrValid === false) {
+        reasons.push("퇴장 QR 만료");
+      } else if (typeof v.checkOutGpsAccuracy === "number" && v.checkOutGpsAccuracy > MAX_GPS_ACCURACY) {
+        reasons.push(`퇴장 GPS 오차 큼(${v.checkOutGpsAccuracy}m)`);
+      } else {
+        reasons.push("퇴장 위치 불일치");
+      }
     }
     if (reasons.length) reasonLine = `<div class="meta" style="color:var(--danger);">${reasons.join(" · ")}</div>`;
   }
@@ -501,6 +517,31 @@ async function loadUnvisited() {
 }
 
 /* ---------- 공통 ---------- */
+
+// 방문 중 자동 기록된 위치 핑들을 이어서 구글지도 경로로 열어줌
+async function viewRoute(visitId) {
+  try {
+    const result = await apiGet({ action: "getLocationPings", visitId });
+    const pings = result.pings || [];
+
+    if (pings.length === 0) {
+      showToast("이 방문에는 기록된 이동 위치가 없어요 (짧게 머물렀거나, 앱이 꺼져있었을 수 있어요).");
+      return;
+    }
+    if (pings.length === 1) {
+      const p = pings[0];
+      window.open(`https://www.google.com/maps?q=${p.lat},${p.lng}`, "_blank");
+      return;
+    }
+
+    // 구글지도는 /dir/ 뒤에 좌표를 슬래시로 이어 붙이면 여러 지점을 경로로 보여줍니다.
+    const path = pings.map((p) => `${p.lat},${p.lng}`).join("/");
+    window.open(`https://www.google.com/maps/dir/${path}`, "_blank");
+  } catch (e) {
+    console.error(e);
+    showToast("이동경로를 불러오지 못했습니다.");
+  }
+}
 
 function escapeHtml(str) {
   const div = document.createElement("div");
