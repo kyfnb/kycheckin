@@ -6,7 +6,9 @@
 
    권한:
    - staff(담당자): 본인이 담당자로 등록된 매장만 검색됨 (필터 UI 자체가 안 보임)
-   - leader/admin: 전체 매장 검색 가능 + 브랜드/팀/담당자로 필터링 가능
+   - leader(리더): 본인이 지정된 팀 소속 매장만 검색됨 (필터 UI 자체가 안 보임, 서버가 강제로 범위 제한)
+   - head(Head): 본인이 지정된 브랜드(들) 안에서 브랜드/팀/담당자로 필터링 가능
+   - admin(관리자): 전체 매장에서 자유롭게 필터링 가능
    ======================================== */
 
 const sv = requireLogin();
@@ -14,12 +16,14 @@ if (sv) {
   document.getElementById("sv-name-label").textContent = sv.name;
 }
 
-const isPrivileged = sv && (sv.role === "leader" || sv.role === "admin");
+const canUseFilters = sv && (sv.role === "head" || sv.role === "admin"); // 브랜드/팀/담당자 필터 노출 여부
 
-if (isPrivileged) {
+if (canUseFilters) {
   document.getElementById("filter-card").style.display = "block";
   document.getElementById("page-sub-text").textContent =
-    "전체 매장을 검색하거나, 브랜드/팀/담당자로 필터링해서 찾을 수 있어요.";
+    sv.role === "admin"
+      ? "전체 매장을 검색하거나, 브랜드/팀/담당자로 필터링해서 찾을 수 있어요."
+      : "담당 브랜드 안에서 검색하거나, 팀/담당자로 필터링해서 찾을 수 있어요.";
   loadBrandOptions();
   loadTeamManagerOptions();
 } else {
@@ -35,7 +39,7 @@ function normalizeTeamLabel(raw) {
 
 async function loadBrandOptions() {
   try {
-    const result = await apiGet({ action: "getFilterOptions" });
+    const result = await apiGet({ action: "getFilterOptions", svId: sv.email });
     fillSelect("filter-brand", result.brands || []);
   } catch (e) {
     console.error(e);
@@ -47,6 +51,7 @@ async function loadTeamManagerOptions() {
   try {
     const result = await apiGet({
       action: "getFilterOptions",
+      svId: sv.email,
       brand: document.getElementById("filter-brand").value,
       team: document.getElementById("filter-team").value
     });
@@ -90,9 +95,9 @@ async function handleSearch() {
   document.getElementById("kiosk-result").style.display = "none";
 
   // 담당자는 검색어 없이도 "내 매장 전체"를 조회할 수 있음
-  if (!isPrivileged && !query) {
+  if (!canUseFilters && !query) {
     // 그대로 진행 (서버가 담당자 이름으로 강제 필터링)
-  } else if (isPrivileged && !query) {
+  } else if (canUseFilters && !query) {
     const anyFilter =
       document.getElementById("filter-brand").value ||
       document.getElementById("filter-team").value ||
@@ -105,8 +110,8 @@ async function handleSearch() {
 
   resultsEl.innerHTML = `<p class="hint" style="text-align:center; padding:16px;">검색 중…</p>`;
 
-  const params = { action: "searchStore", query, svName: sv.name, svRole: sv.role || "staff" };
-  if (isPrivileged) {
+  const params = { action: "searchStore", query, svId: sv.email };
+  if (canUseFilters) {
     params.brand = document.getElementById("filter-brand").value;
     params.team = document.getElementById("filter-team").value;
     params.manager = document.getElementById("filter-manager").value;
@@ -133,7 +138,7 @@ async function handleSearch() {
       row.className = "visit-row";
       row.style.cursor = "pointer";
       const metaParts = [store.storeId, store.status];
-      if (isPrivileged) {
+      if (canUseFilters) {
         if (store.team) metaParts.push(store.team);
         if (store.manager) metaParts.push(store.manager);
       }
