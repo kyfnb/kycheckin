@@ -8,7 +8,8 @@ if (sv) {
   document.getElementById("sv-name-label").textContent = sv.name;
 }
 
-const isPrivilegedHistory = sv && (sv.role === "leader" || sv.role === "admin");
+const isPrivilegedHistory = sv && (sv.role === "leader" || sv.role === "head" || sv.role === "admin"); // "전체 보기" 노출 여부
+const canUseFilters = sv && (sv.role === "leader" || sv.role === "head" || sv.role === "admin"); // 브랜드/팀/담당자 필터 노출 여부 (리더는 본인 팀 안에서만, 담당자를 골라볼 수 있음)
 const isAdminUser = sv && sv.role === "admin";
 
 // 담당자(staff)는 "내 방문만"만 볼 수 있고, "전체 보기" 자체가 안 보입니다.
@@ -16,12 +17,13 @@ if (!isPrivilegedHistory) {
   document.getElementById("filter-all").style.display = "none";
 }
 
-// 리더/관리자는 브랜드·팀·담당자 필터를 쓸 수 있습니다 (브랜드 → 팀 → 담당자 순으로 연동됨).
+// Head/관리자는 브랜드·팀·담당자 필터를 쓸 수 있습니다 (브랜드 → 팀 → 담당자 순으로 연동됨).
+// 리더는 이미 본인 팀으로 고정되어 있어서 필터 UI 자체를 보여주지 않습니다 (서버가 강제로 범위를 제한함).
 let currentBrandFilter = "";
 let currentTeamFilter = "";
 let currentManagerFilter = "";
 
-if (isPrivilegedHistory) {
+if (canUseFilters) {
   document.getElementById("team-manager-filter-card").style.display = "block";
   loadBrandOptions();
   loadTeamManagerOptions();
@@ -36,7 +38,7 @@ function normalizeTeamLabel(raw) {
 
 async function loadBrandOptions() {
   try {
-    const result = await apiGet({ action: "getFilterOptions" });
+    const result = await apiGet({ action: "getFilterOptions", svId: sv.email });
     fillFilterSelect("history-brand-filter", result.brands || []);
   } catch (e) {
     console.error(e);
@@ -48,6 +50,7 @@ async function loadTeamManagerOptions() {
   try {
     const result = await apiGet({
       action: "getFilterOptions",
+      svId: sv.email,
       brand: currentBrandFilter,
       team: currentTeamFilter
     });
@@ -81,8 +84,8 @@ async function handleBrandFilterChange() {
   currentManagerFilter = "";
   document.getElementById("history-team-filter").value = "";
   document.getElementById("history-manager-filter").value = "";
-  await loadTeamManagerOptions();
-  refreshCurrentView();
+  // 옵션 갱신과 목록/캘린더 갱신을 동시에 진행해서 체감 속도를 높입니다.
+  await Promise.all([loadTeamManagerOptions(), refreshCurrentView()]);
   if (currentView === "unvisited") loadUnvisited();
 }
 
@@ -91,8 +94,7 @@ async function handleTeamFilterChange() {
   // 팀이 바뀌면 담당자 선택은 초기화하고, 그 팀 기준으로 담당자 옵션을 다시 불러옵니다.
   currentManagerFilter = "";
   document.getElementById("history-manager-filter").value = "";
-  await loadTeamManagerOptions();
-  refreshCurrentView();
+  await Promise.all([loadTeamManagerOptions(), refreshCurrentView()]);
   if (currentView === "unvisited") loadUnvisited();
 }
 
@@ -226,12 +228,12 @@ function renderVisitRow(v) {
   const checkInPhotoLink = v.checkInPhotoUrl
     ? `<a href="${v.checkInPhotoUrl}" target="_blank" style="color:var(--primary); text-decoration:underline;">입장사진</a>`
     : "";
-  const checkOutPhotoLink = v.checkOutPhotoUrl
-    ? `<a href="${v.checkOutPhotoUrl}" target="_blank" style="color:var(--primary); text-decoration:underline;">퇴장사진</a>`
+  const routeLink = v.visitId
+    ? `<a href="#" onclick="viewRoute('${v.visitId}'); return false;" style="color:var(--primary); text-decoration:underline;">이동경로</a>`
     : "";
-  const photoLinks = [checkInPhotoLink, checkOutPhotoLink].filter(Boolean).join(" · ");
+  const photoLinks = [checkInPhotoLink, routeLink].filter(Boolean).join(" · ");
 
-  let statusClass, statusText;
+  let statusClass, statusText, reasonLine = "";
   if (!hasCheckOut) {
     const hoursSinceCheckIn = (Date.now() - new Date(v.checkInAt).getTime()) / 3600000;
     if (hoursSinceCheckIn > 16) {
@@ -247,6 +249,29 @@ function renderVisitRow(v) {
   } else {
     statusClass = "fail";
     statusText = "⚠ 확인필요";
+
+    // 입장/퇴장 중 어느 쪽이, 위치 때문인지 QR 만료 때문인지 GPS 오차 때문인지 구체적으로 표시
+    const MAX_GPS_ACCURACY = 200;
+    const reasons = [];
+    if (!v.checkInVerified) {
+      if (v.checkInQrValid === false) {
+        reasons.push("입장 QR 만료");
+      } else if (typeof v.checkInGpsAccuracy === "number" && v.checkInGpsAccuracy > MAX_GPS_ACCURACY) {
+        reasons.push(`입장 GPS 오차 큼(${v.checkInGpsAccuracy}m)`);
+      } else {
+        reasons.push("입장 위치 불일치");
+      }
+    }
+    if (!v.checkOutVerified) {
+      if (v.checkOutQrValid === false) {
+        reasons.push("퇴장 QR 만료");
+      } else if (typeof v.checkOutGpsAccuracy === "number" && v.checkOutGpsAccuracy > MAX_GPS_ACCURACY) {
+        reasons.push(`퇴장 GPS 오차 큼(${v.checkOutGpsAccuracy}m)`);
+      } else {
+        reasons.push("퇴장 위치 불일치");
+      }
+    }
+    if (reasons.length) reasonLine = `<div class="meta" style="color:var(--danger);">${reasons.join(" · ")}</div>`;
   }
 
   const metaLine1 = `입장 ${checkInWhen} (${v.checkInDistance}m)`;
@@ -260,6 +285,7 @@ function renderVisitRow(v) {
       <div class="meta">${metaLine1}</div>
       <div class="meta">${metaLine2}</div>
       <div class="meta">${escapeHtml(v.svName)}${photoLinks ? " · " + photoLinks : ""}</div>
+      ${reasonLine}
     </div>
 
     <span class="status-pill ${statusClass}">${statusText}</span>
@@ -452,11 +478,10 @@ async function loadUnvisited() {
   try {
     const result = await apiGet({
       action: "getUnvisitedStores",
-      svName: sv.name,
-      isPrivileged: isPrivilegedHistory ? "true" : "false",
-      brand: isPrivilegedHistory ? currentBrandFilter : "",
-      team: isPrivilegedHistory ? currentTeamFilter : "",
-      manager: isPrivilegedHistory ? currentManagerFilter : ""
+      svId: sv.email,
+      brand: canUseFilters ? currentBrandFilter : "",
+      team: canUseFilters ? currentTeamFilter : "",
+      manager: canUseFilters ? currentManagerFilter : ""
     });
     const stores = result.stores || [];
 
@@ -494,6 +519,31 @@ async function loadUnvisited() {
 }
 
 /* ---------- 공통 ---------- */
+
+// 방문 중 자동 기록된 위치 핑들을 이어서 구글지도 경로로 열어줌
+async function viewRoute(visitId) {
+  try {
+    const result = await apiGet({ action: "getLocationPings", visitId });
+    const pings = result.pings || [];
+
+    if (pings.length === 0) {
+      showToast("이 방문에는 기록된 이동 위치가 없어요 (짧게 머물렀거나, 앱이 꺼져있었을 수 있어요).");
+      return;
+    }
+    if (pings.length === 1) {
+      const p = pings[0];
+      window.open(`https://www.google.com/maps?q=${p.lat},${p.lng}`, "_blank");
+      return;
+    }
+
+    // 구글지도는 /dir/ 뒤에 좌표를 슬래시로 이어 붙이면 여러 지점을 경로로 보여줍니다.
+    const path = pings.map((p) => `${p.lat},${p.lng}`).join("/");
+    window.open(`https://www.google.com/maps/dir/${path}`, "_blank");
+  } catch (e) {
+    console.error(e);
+    showToast("이동경로를 불러오지 못했습니다.");
+  }
+}
 
 function escapeHtml(str) {
   const div = document.createElement("div");
