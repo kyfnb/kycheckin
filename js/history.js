@@ -100,6 +100,12 @@ async function handleTeamFilterChange() {
 
 function handleTeamManagerFilterChange() {
   currentManagerFilter = document.getElementById("history-manager-filter").value;
+  // 특정 담당자를 골랐으면 "내 방문만" 토글은 의미가 없어지므로(그 사람 것을 보여줘야 하니까), 전체 보기로 맞춰줌
+  if (currentManagerFilter) {
+    currentFilter = "all";
+    document.getElementById("filter-mine").className = "btn btn-secondary";
+    document.getElementById("filter-all").className = "btn btn-primary";
+  }
   refreshCurrentView();
   if (currentView === "unvisited") loadUnvisited();
 }
