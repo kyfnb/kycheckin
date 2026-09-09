@@ -9,7 +9,7 @@ if (sv) {
 }
 
 const isPrivilegedHistory = sv && (sv.role === "leader" || sv.role === "head" || sv.role === "admin"); // "전체 보기" 노출 여부
-const canUseFilters = sv && (sv.role === "head" || sv.role === "admin"); // 브랜드/팀/담당자 필터 노출 여부 (리더는 이미 팀이 고정이라 필터 자체가 필요없음)
+const canUseFilters = sv && (sv.role === "leader" || sv.role === "head" || sv.role === "admin"); // 브랜드/팀/담당자 필터 노출 여부 (리더는 본인 팀 안에서만, 담당자를 골라볼 수 있음)
 const isAdminUser = sv && sv.role === "admin";
 
 // 담당자(staff)는 "내 방문만"만 볼 수 있고, "전체 보기" 자체가 안 보입니다.

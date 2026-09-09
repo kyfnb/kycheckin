@@ -16,14 +16,16 @@ if (sv) {
   document.getElementById("sv-name-label").textContent = sv.name;
 }
 
-const canUseFilters = sv && (sv.role === "head" || sv.role === "admin"); // 브랜드/팀/담당자 필터 노출 여부
+const canUseFilters = sv && (sv.role === "leader" || sv.role === "head" || sv.role === "admin"); // 브랜드/팀/담당자 필터 노출 여부
 
 if (canUseFilters) {
   document.getElementById("filter-card").style.display = "block";
   document.getElementById("page-sub-text").textContent =
     sv.role === "admin"
       ? "전체 매장을 검색하거나, 브랜드/팀/담당자로 필터링해서 찾을 수 있어요."
-      : "담당 브랜드 안에서 검색하거나, 팀/담당자로 필터링해서 찾을 수 있어요.";
+      : sv.role === "head"
+      ? "담당 브랜드 안에서 검색하거나, 팀/담당자로 필터링해서 찾을 수 있어요."
+      : "담당 팀 안에서 검색하거나, 담당자를 골라서 찾을 수 있어요.";
   loadBrandOptions();
   loadTeamManagerOptions();
 } else {
