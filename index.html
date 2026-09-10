@@ -203,25 +203,19 @@
     const countText = (row) => `총 ${row.total} · 방문 ${row.visited} · 미방문 ${row.unvisited}`;
 
     brands.forEach((brand) => {
-      const brandCard = document.createElement("div");
-      brandCard.className = "card breakdown-brand-card";
+      const details = document.createElement("details");
+      details.className = "card breakdown-brand-card";
 
-      let html = `
-        <div class="breakdown-row breakdown-brand">
-          <span class="breakdown-name">${escapeHtmlIndex(brand.name)}</span>
-          <span class="breakdown-count">${countText(brand)}</span>
-        </div>
-      `;
-
+      let bodyHtml = "";
       brand.teams.forEach((team) => {
-        html += `
+        bodyHtml += `
           <div class="breakdown-row breakdown-team">
             <span class="breakdown-name">${escapeHtmlIndex(team.name)}</span>
             <span class="breakdown-count">${countText(team)}</span>
           </div>
         `;
         team.managers.forEach((manager) => {
-          html += `
+          bodyHtml += `
             <div class="breakdown-row breakdown-manager">
               <span class="breakdown-name">${escapeHtmlIndex(manager.name)}</span>
               <span class="breakdown-count">${countText(manager)}</span>
@@ -230,8 +224,14 @@
         });
       });
 
-      brandCard.innerHTML = html;
-      container.appendChild(brandCard);
+      details.innerHTML = `
+        <summary class="breakdown-row breakdown-brand">
+          <span class="breakdown-name">${escapeHtmlIndex(brand.name)}</span>
+          <span class="breakdown-count">${countText(brand)}</span>
+        </summary>
+        <div class="breakdown-body">${bodyHtml}</div>
+      `;
+      container.appendChild(details);
     });
   }
 
