@@ -111,6 +111,7 @@
       </div>
 
       <p class="page-title" style="font-size:15px; margin-top:28px;">이번달 방문 이력</p>
+      <p class="hint" id="monthly-stats-scope-label" style="margin-top:-8px; margin-bottom:10px; display:none;"></p>
       <div class="card" id="monthly-stats-card">
         <div class="stats-row">
           <div class="stat-box">
@@ -127,6 +128,8 @@
           </div>
         </div>
       </div>
+
+      <div id="monthly-breakdown" style="display:none; margin-top:10px;"></div>
 
       <button class="btn btn-ghost" style="margin-top:24px;" onclick="logoutSV()">로그아웃</button>
     </div>
@@ -155,8 +158,20 @@
   }
 
   async function loadMonthlyStats(sv) {
+    const scopeLabel = document.getElementById("monthly-stats-scope-label");
+    if (sv.role === "leader") {
+      scopeLabel.textContent = "본인 소속 팀 전체 기준이에요.";
+      scopeLabel.style.display = "block";
+    } else if (sv.role === "head") {
+      scopeLabel.textContent = "본인 담당 브랜드 전체 기준이에요.";
+      scopeLabel.style.display = "block";
+    } else if (sv.role === "admin") {
+      scopeLabel.textContent = "회사 전체 매장 기준이에요.";
+      scopeLabel.style.display = "block";
+    }
+
     try {
-      const result = await apiGet({ action: "getMonthlyStoreStats", svName: sv.name });
+      const result = await apiGet({ action: "getMonthlyStoreStats", svId: sv.email });
       document.getElementById("monthly-stat-total").textContent = result.totalAssigned ?? 0;
       document.getElementById("monthly-stat-visited").textContent = result.visitedCount ?? 0;
       document.getElementById("monthly-stat-unvisited").textContent = result.unvisitedCount ?? 0;
@@ -164,6 +179,66 @@
       console.error(e);
       // 실패해도 화면엔 그냥 "-"로 남겨두고 조용히 넘어감
     }
+
+    // 리더/Head/관리자는 브랜드 → 팀 → 담당자 단위 상세 내역도 함께 보여줌
+    if (sv.role === "leader" || sv.role === "head" || sv.role === "admin") {
+      try {
+        const breakdown = await apiGet({ action: "getMonthlyBreakdown", svId: sv.email });
+        renderMonthlyBreakdown(breakdown.brands || []);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
+  function renderMonthlyBreakdown(brands) {
+    const container = document.getElementById("monthly-breakdown");
+    if (!brands.length) {
+      container.style.display = "none";
+      return;
+    }
+    container.style.display = "block";
+    container.innerHTML = "";
+
+    const countText = (row) => `총 ${row.total} · 방문 ${row.visited} · 미방문 ${row.unvisited}`;
+
+    brands.forEach((brand) => {
+      const brandCard = document.createElement("div");
+      brandCard.className = "card breakdown-brand-card";
+
+      let html = `
+        <div class="breakdown-row breakdown-brand">
+          <span class="breakdown-name">${escapeHtmlIndex(brand.name)}</span>
+          <span class="breakdown-count">${countText(brand)}</span>
+        </div>
+      `;
+
+      brand.teams.forEach((team) => {
+        html += `
+          <div class="breakdown-row breakdown-team">
+            <span class="breakdown-name">${escapeHtmlIndex(team.name)}</span>
+            <span class="breakdown-count">${countText(team)}</span>
+          </div>
+        `;
+        team.managers.forEach((manager) => {
+          html += `
+            <div class="breakdown-row breakdown-manager">
+              <span class="breakdown-name">${escapeHtmlIndex(manager.name)}</span>
+              <span class="breakdown-count">${countText(manager)}</span>
+            </div>
+          `;
+        });
+      });
+
+      brandCard.innerHTML = html;
+      container.appendChild(brandCard);
+    });
+  }
+
+  function escapeHtmlIndex(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
   }
 
   async function handleRequestAccess() {

@@ -452,6 +452,48 @@ body.has-session-banner .brand-header {
   white-space: nowrap;
 }
 
+/* 이번달 방문 이력 - 브랜드/팀/담당자별 상세내역 */
+.breakdown-brand-card {
+  margin-bottom: 10px;
+  padding: 10px 14px;
+}
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+}
+.breakdown-row:last-child { border-bottom: none; }
+
+.breakdown-brand {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  border-bottom: 1px solid var(--primary);
+  padding-bottom: 8px;
+}
+.breakdown-brand .breakdown-count { color: var(--primary); font-weight: 700; }
+
+.breakdown-team {
+  padding-left: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.breakdown-manager {
+  padding-left: 30px;
+  color: var(--muted);
+}
+.breakdown-manager .breakdown-name::before {
+  content: "· ";
+}
+
+.breakdown-count { white-space: nowrap; padding-left: 12px; }
+
 /* 미방문 매장 통계 (담당/방문/미방문 카운트) */
 .stats-row {
   display: flex;
