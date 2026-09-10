@@ -225,6 +225,7 @@ async function submitVisitWithPhoto() {
 async function finalizeVisit() {
   const v = pendingVisit;
   let qrValid = true;
+  let accuracyOk = true;
   let resultType = v.sessionType;
   let durationMinutes = null;
 
@@ -247,6 +248,9 @@ async function finalizeVisit() {
     if (typeof saveResult.qrValid === "boolean") {
       qrValid = saveResult.qrValid;
     }
+    if (typeof saveResult.accuracyOk === "boolean") {
+      accuracyOk = saveResult.accuracyOk;
+    }
     if (saveResult.type) {
       resultType = saveResult.type; // 서버가 저장 시점에 최종 확정한 값(입장/퇴장)
     }
@@ -256,9 +260,16 @@ async function finalizeVisit() {
 
     if (saveResult.success) {
       if (resultType === "checkin") {
-        setActiveSession({ storeId: v.storeId, storeName: v.storeName, checkInAt: new Date().toISOString() });
+        setActiveSession({
+          storeId: v.storeId,
+          storeName: v.storeName,
+          checkInAt: new Date().toISOString(),
+          visitId: saveResult.visitId || null
+        });
+        startLocationPingIfNeeded(); // 입장 즉시 주기적 위치 기록 시작
       } else if (resultType === "checkout") {
         clearActiveSession();
+        stopLocationPing();
       }
     }
   } catch (e) {
@@ -266,10 +277,10 @@ async function finalizeVisit() {
     showToast("방문 기록 저장에 실패했습니다.");
   }
 
-  showResult(v.storeName, v.distance, v.locationOk, qrValid, resultType, durationMinutes);
+  showResult(v.storeName, v.distance, v.locationOk, qrValid, resultType, durationMinutes, accuracyOk, v.accuracy);
 }
 
-function showResult(storeName, distance, locationOk, qrValid, sessionType, durationMinutes) {
+function showResult(storeName, distance, locationOk, qrValid, sessionType, durationMinutes, accuracyOk, accuracy) {
   document.getElementById("step-photo").style.display = "none";
   document.getElementById("step-result").style.display = "block";
   document.getElementById("step-desc").textContent = "방문 등록이 완료되었습니다.";
@@ -288,6 +299,11 @@ function showResult(storeName, distance, locationOk, qrValid, sessionType, durat
     pill.className = "status-pill fail";
     pill.textContent = "⚠ QR 만료됨";
     detail.textContent = "QR코드가 오래된 것 같아요(캡처된 이미지일 수 있음). 화면의 최신 QR을 다시 스캔해주세요.";
+  } else if (accuracyOk === false) {
+    badge.className = "gps-badge fail";
+    pill.className = "status-pill fail";
+    pill.textContent = "⚠ GPS 신호 약함";
+    detail.textContent = `현재 위치 오차범위가 약 ${Math.round(accuracy || 0)}m로 너무 커서 확인이 어려워요. 실외로 이동해서 다시 시도해주시거나, 휴대폰 설정에서 "정확한 위치" 사용을 켜주세요.`;
   } else if (locationOk) {
     badge.className = "gps-badge ok";
     pill.className = "status-pill ok";

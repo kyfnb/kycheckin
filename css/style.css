@@ -1,33 +1,35 @@
 /* ========================================
    가맹점 방문 확인 시스템 - 공통 스타일
-   톤: 현장에서 빠르게 쓰는 업무 도구. 화려함보다 명확함.
+   톤: 현장에서 빠르게 쓰는 업무 도구. 깔끔하고 절제된 모던 톤.
    ======================================== */
 
 :root {
-  --bg: #101010;
-  --surface: #1B1B1B;
-  --ink: #F5F1E8;
-  --muted: #9C968A;
-  --border: #2E2B24;
+  --bg: #131314;
+  --surface: #1C1C1E;
+  --surface-raised: #222224;
+  --ink: #F2F1ED;
+  --muted: #93918B;
+  --border: #29282A;
 
   --primary: #C9A227;
   --primary-dark: #A9861C;
-  --primary-soft: rgba(201, 162, 39, 0.14);
+  --primary-soft: rgba(201, 162, 39, 0.12);
 
   --accent: #C9A227;
-  --accent-soft: rgba(201, 162, 39, 0.14);
+  --accent-soft: rgba(201, 162, 39, 0.12);
 
   --danger: #E2685C;
-  --danger-soft: rgba(226, 104, 92, 0.14);
+  --danger-soft: rgba(226, 104, 92, 0.12);
 
-  --success: #4FAE7D;
-  --success-soft: rgba(79, 174, 125, 0.14);
+  --success: #45AD7D;
+  --success-soft: rgba(69, 173, 125, 0.12);
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
 
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.55);
+  --shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 10px 28px rgba(0, 0, 0, 0.28);
+  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
 * { box-sizing: border-box; }
@@ -37,19 +39,23 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1;
 }
 
 h1, h2, h3 {
-  font-family: 'Noto Serif KR', serif;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin: 0 0 4px 0;
 }
 
+/* 정렬이 중요한 숫자(거리, 통계 등)는 고정폭 숫자체로 - 본문과 같은 폰트를 유지해 통일감을 줌 */
 .mono {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .app-shell {
@@ -74,9 +80,9 @@ h1, h2, h3 {
   gap: 8px;
   padding: 10px 16px;
   background: var(--accent);
-  color: var(--bg);
+  color: #17140A;
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   text-align: center;
 }
@@ -85,7 +91,7 @@ h1, h2, h3 {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--bg);
+  background: #17140A;
   flex: 0 0 auto;
   animation: session-dot-pulse 1.2s ease-in-out infinite;
 }
@@ -118,32 +124,30 @@ body.has-session-banner .brand-header {
 }
 
 .brand-header {
-  padding: 28px 20px 20px;
+  padding: 26px 20px 18px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   text-align: center;
 }
 
 .brand-header img {
-  height: 22px;
+  height: 20px;
   width: auto;
 }
 
 .brand-header .tagline {
   margin-top: 8px;
   font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.01em;
   color: var(--muted);
-  text-transform: uppercase;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
 }
 
 .topbar .eyebrow {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.01em;
+  font-family: 'Pretendard', sans-serif;
 }
 
 .topbar .who {
@@ -151,16 +155,19 @@ body.has-session-banner .brand-header {
   color: var(--muted);
 }
 
-.topbar .who strong { color: var(--ink); }
+.topbar .who strong { color: var(--ink); font-weight: 600; }
 
 .back-link {
   color: var(--muted);
   text-decoration: none;
   font-size: 14px;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  transition: color 0.15s ease;
 }
+.back-link:hover { color: var(--ink); }
 
 /* 본문 */
 .content {
@@ -169,13 +176,16 @@ body.has-session-banner .brand-header {
 }
 
 .page-title {
-  font-size: 22px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin-bottom: 4px;
 }
 
 .page-sub {
   color: var(--muted);
   font-size: 14px;
+  line-height: 1.5;
   margin-bottom: 24px;
 }
 
@@ -186,7 +196,7 @@ body.has-session-banner .brand-header {
   border-radius: var(--radius-md);
   padding: 20px;
   margin-bottom: 16px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 폼 요소 */
@@ -209,8 +219,9 @@ body.has-session-banner .brand-header {
   border-radius: var(--radius-sm);
   font-size: 15px;
   font-family: inherit;
-  background: var(--surface);
+  background: var(--surface-raised);
   color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .field input:focus, .field select:focus {
@@ -230,8 +241,9 @@ body.has-session-banner .brand-header {
   align-items: center;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--surface);
+  background: var(--surface-raised);
   overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .field-suffix-group:focus-within {
@@ -263,8 +275,9 @@ body.has-session-banner .brand-header {
 }
 
 .hint {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--muted);
+  line-height: 1.5;
   margin-top: 4px;
 }
 
@@ -281,29 +294,32 @@ body.has-session-banner .brand-header {
   font-size: 15px;
   font-weight: 600;
   font-family: inherit;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  transition: transform 0.06s ease, opacity 0.15s ease;
+  transition: transform 0.06s ease, opacity 0.15s ease, background 0.15s ease;
 }
 
 .btn:active { transform: scale(0.98); }
 
 .btn-primary {
   background: var(--primary);
-  color: var(--bg);
+  color: #17140A;
 }
 .btn-primary:hover { background: var(--primary-dark); }
 
 .btn-secondary {
-  background: var(--surface);
+  background: var(--surface-raised);
   color: var(--ink);
   border: 1px solid var(--border);
 }
+.btn-secondary:hover { border-color: var(--muted); }
 
 .btn-ghost {
   background: transparent;
   color: var(--primary);
-  border: 1px solid var(--primary);
+  border: 1px solid var(--border);
 }
+.btn-ghost:hover { border-color: var(--primary); }
 
 .btn:disabled {
   opacity: 0.5;
@@ -337,6 +353,7 @@ body.has-session-banner .brand-header {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  transition: color 0.15s ease;
 }
 
 .tabbar a.active { color: var(--primary); }
@@ -353,7 +370,7 @@ body.has-session-banner .brand-header {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 6px solid var(--border);
+  border: 4px solid var(--border);
   transition: border-color 0.3s ease, background 0.3s ease;
   background: var(--surface);
 }
@@ -374,9 +391,11 @@ body.has-session-banner .brand-header {
 }
 
 .gps-badge .dist-value {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .gps-badge .dist-label {
@@ -440,7 +459,7 @@ body.has-session-banner .brand-header {
 
 /* 조회 기간 버튼: 3개가 한 줄에 들어가야 해서 폰트/여백을 줄임 */
 .period-btn {
-  font-size: 12px;
+  font-size: 12.5px;
   padding: 10px 4px;
   white-space: nowrap;
 }
@@ -482,7 +501,7 @@ body.has-session-banner .brand-header {
 
 .breakdown-name {
   color: var(--ink);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 13.5px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -493,9 +512,10 @@ body.has-session-banner .brand-header {
   padding: 16px;
 }
 .breakdown-brand .breakdown-name {
-  font-family: 'Noto Serif KR', serif;
-  font-size: 16px;
-  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -523,6 +543,7 @@ details[open] > .breakdown-brand .breakdown-name::before {
 .breakdown-manager .breakdown-name {
   color: var(--muted);
   font-size: 12.5px;
+  font-weight: 400;
 }
 .breakdown-manager .breakdown-name::before {
   content: "‧";
@@ -530,12 +551,13 @@ details[open] > .breakdown-brand .breakdown-name::before {
   color: var(--primary);
 }
 
-/* 숫자는 박스/알약 없이, 상단 요약 카드와 같은 고정폭 숫자체로 색상만 구분 */
+/* 숫자는 박스/알약 없이, 본문과 같은 폰트의 고정폭 숫자로 색상만 구분 */
 .breakdown-stats {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 12.5px;
   font-weight: 600;
   flex: 0 0 auto;
@@ -558,13 +580,15 @@ details[open] > .breakdown-brand .breakdown-name::before {
   border-left: 1px solid var(--border);
 }
 .stat-value {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 22px;
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--ink);
 }
 .stat-label {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--muted);
   margin-top: 2px;
 }
@@ -577,7 +601,7 @@ details[open] > .breakdown-brand .breakdown-name::before {
   font-size: 12px;
   color: var(--muted);
   margin-top: 2px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 캘린더 뷰 */
@@ -592,7 +616,6 @@ details[open] > .breakdown-brand .breakdown-name::before {
   font-size: 11px;
   color: var(--muted);
   padding-bottom: 4px;
-  font-family: 'IBM Plex Mono', monospace;
 }
 
 .calendar-day-cell {
@@ -602,11 +625,12 @@ details[open] > .breakdown-brand .breakdown-name::before {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--muted);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
@@ -646,8 +670,9 @@ details[open] > .breakdown-brand .breakdown-name::before {
   color: var(--muted);
 }
 .empty-state .big-icon {
-  font-size: 36px;
+  font-size: 34px;
   margin-bottom: 12px;
+  opacity: 0.8;
 }
 
 /* QR 리더 영역 */
@@ -668,6 +693,7 @@ details[open] > .breakdown-brand .breakdown-name::before {
   padding: 12px 20px;
   border-radius: var(--radius-sm);
   font-size: 13px;
+  font-weight: 500;
   box-shadow: var(--shadow);
   z-index: 100;
   max-width: 90%;

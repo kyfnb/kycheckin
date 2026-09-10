@@ -166,3 +166,76 @@ function renderActiveSessionBanner() {
 }
 
 document.addEventListener("DOMContentLoaded", renderActiveSessionBanner);
+
+/* ========================================
+   입장 중 자동 주기적 위치 기록
+   ----------------------------------------
+   입장을 찍은 뒤(점검중 상태) 앱이 켜져있는 동안, 정해진 간격마다 자동으로
+   위치를 기록해서 나중에 관리자가 이동 경로를 확인할 수 있게 합니다.
+
+   ⚠️ 웹앱의 한계: 화면을 끄거나 다른 앱으로 전환하면 브라우저가 자바스크립트
+   실행을 멈추기 때문에, "앱이 화면에 켜져있는 동안"만 기록됩니다. 완전한
+   백그라운드 추적은 네이티브 앱이 아니면 불가능합니다.
+   ======================================== */
+
+const LOCATION_PING_INTERVAL_MS = 5 * 60 * 1000; // 5분마다
+let __locationPingTimer = null;
+
+function startLocationPingIfNeeded() {
+  // 매장 QR 표시 화면(store-display.html)에서는 실행하지 않음
+  if (document.body.dataset.appPage === "kiosk") return;
+  if (__locationPingTimer) return; // 이미 돌고 있으면 중복 시작 안 함
+
+  const session = getActiveSession();
+  if (!session || !session.visitId) return; // 입장 중이 아니거나, 방문ID가 없으면(예전 세션) 시작 안 함
+
+  sendLocationPingOnce(session); // 시작하자마자 한 번 바로 기록
+  __locationPingTimer = setInterval(() => {
+    const current = getActiveSession();
+    if (!current || !current.visitId) {
+      stopLocationPing();
+      return;
+    }
+    sendLocationPingOnce(current);
+  }, LOCATION_PING_INTERVAL_MS);
+}
+
+function stopLocationPing() {
+  if (__locationPingTimer) {
+    clearInterval(__locationPingTimer);
+    __locationPingTimer = null;
+  }
+}
+
+function sendLocationPingOnce(session) {
+  if (!navigator.geolocation) return;
+  const sv = getCurrentSV();
+  if (!sv) return;
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      apiPost({
+        action: "logLocationPing",
+        svId: sv.email,
+        svName: sv.name,
+        storeId: session.storeId,
+        storeName: session.storeName,
+        visitId: session.visitId,
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: Math.round(position.coords.accuracy || 0)
+      }).catch(() => {}); // 실패해도 조용히 넘어감 (다음 주기에 다시 시도)
+    },
+    () => {}, // 위치 가져오기 실패해도 조용히 넘어감
+    { enableHighAccuracy: false, timeout: 10000 }
+  );
+}
+
+// 페이지가 다시 보일 때(다른 앱 갔다가 돌아옴 등) 상태를 다시 확인해서, 필요하면 재시작
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    startLocationPingIfNeeded();
+  }
+});
+
+document.addEventListener("DOMContentLoaded", startLocationPingIfNeeded);
