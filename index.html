@@ -200,7 +200,13 @@
     container.style.display = "block";
     container.innerHTML = "";
 
-    const countText = (row) => `총 ${row.total} · 방문 ${row.visited} · 미방문 ${row.unvisited}`;
+    const countBadges = (row) => `
+      <span class="breakdown-stats">
+        <span class="breakdown-stat total">총 ${row.total}</span>
+        <span class="breakdown-stat visited">방문 ${row.visited}</span>
+        <span class="breakdown-stat unvisited">미방문 ${row.unvisited}</span>
+      </span>
+    `;
 
     brands.forEach((brand) => {
       const details = document.createElement("details");
@@ -211,14 +217,14 @@
         bodyHtml += `
           <div class="breakdown-row breakdown-team">
             <span class="breakdown-name">${escapeHtmlIndex(team.name)}</span>
-            <span class="breakdown-count">${countText(team)}</span>
+            ${countBadges(team)}
           </div>
         `;
         team.managers.forEach((manager) => {
           bodyHtml += `
             <div class="breakdown-row breakdown-manager">
               <span class="breakdown-name">${escapeHtmlIndex(manager.name)}</span>
-              <span class="breakdown-count">${countText(manager)}</span>
+              ${countBadges(manager)}
             </div>
           `;
         });
@@ -227,7 +233,7 @@
       details.innerHTML = `
         <summary class="breakdown-row breakdown-brand">
           <span class="breakdown-name">${escapeHtmlIndex(brand.name)}</span>
-          <span class="breakdown-count">${countText(brand)}</span>
+          ${countBadges(brand)}
         </summary>
         <div class="breakdown-body">${bodyHtml}</div>
       `;
