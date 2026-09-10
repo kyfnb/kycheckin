@@ -202,54 +202,41 @@
     container.style.display = "block";
     container.innerHTML = "";
 
-    // 방문율에 따라 색상 등급을 나눠서(80%+/40%+/그 이하) 숫자보다 한눈에 상태를 읽히게 함
-    const pctClass = (pct) => (pct >= 80 ? "high" : pct >= 40 ? "mid" : "low");
-    const dotColor = (row) => {
-      if (!row.total) return "var(--muted)";
-      if (row.unvisited === 0) return "var(--success)";
-      if (row.visited === 0) return "var(--danger)";
-      return "var(--primary)";
-    };
-
-    const fracRow = (row) => `
-      <span class="breakdown-frac">
-        <span class="breakdown-dot" style="background:${dotColor(row)}"></span>
-        <span class="mono">${row.visited}<span class="breakdown-frac-slash">/</span>${row.total}</span>
+    // 총 개수엔 "총" 라벨을 붙이고, 방문/미방문은 색으로 구분
+    const countBadges = (row) => `
+      <span class="breakdown-stats">
+        <span class="breakdown-stat total">총 ${row.total}개</span>
+        <span class="breakdown-stat visited">방문 ${row.visited}</span>
+        <span class="breakdown-stat unvisited">미방문 ${row.unvisited}</span>
       </span>
     `;
 
     brands.forEach((brand) => {
       const details = document.createElement("details");
       details.className = "card breakdown-brand-card";
-      const pct = brand.total ? Math.round((brand.visited / brand.total) * 100) : 0;
-      const pctCls = pctClass(pct);
 
       let bodyHtml = "";
       brand.teams.forEach((team) => {
         bodyHtml += `
           <div class="breakdown-row breakdown-team">
             <span class="breakdown-name">${escapeHtmlIndex(team.name)}</span>
-            ${fracRow(team)}
+            ${countBadges(team)}
           </div>
         `;
         team.managers.forEach((manager) => {
           bodyHtml += `
             <div class="breakdown-row breakdown-manager">
               <span class="breakdown-name">${escapeHtmlIndex(manager.name)}</span>
-              ${fracRow(manager)}
+              ${countBadges(manager)}
             </div>
           `;
         });
       });
 
       details.innerHTML = `
-        <summary class="breakdown-brand">
-          <div class="breakdown-header">
-            <span class="breakdown-name">${escapeHtmlIndex(brand.name)}</span>
-            <span class="breakdown-pct ${pctCls}">${pct}%</span>
-          </div>
-          <div class="breakdown-progress-track"><div class="breakdown-progress-fill ${pctCls}" style="width:${pct}%"></div></div>
-          <div class="breakdown-caption">방문 ${brand.visited} · 미방문 ${brand.unvisited} · 총 ${brand.total}개</div>
+        <summary class="breakdown-row breakdown-brand">
+          <span class="breakdown-name">${escapeHtmlIndex(brand.name)}</span>
+          ${countBadges(brand)}
         </summary>
         <div class="breakdown-body">${bodyHtml}</div>
       `;

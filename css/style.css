@@ -533,20 +533,10 @@ body.has-session-banner .brand-header {
 
 .breakdown-brand {
   padding: 16px;
-  display: block;
 }
-
-/* 브랜드명 + 방문율 배지 한 줄 */
-.breakdown-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .breakdown-brand .breakdown-name {
   font-family: 'Pretendard', sans-serif;
-  font-size: 16.5px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
   display: flex;
@@ -564,42 +554,6 @@ body.has-session-banner .brand-header {
 }
 details[open] > .breakdown-brand .breakdown-name::before {
   transform: rotate(90deg);
-}
-
-/* 방문율 배지: 구간별로 색만 다르게 (80%+ 초록 / 40%+ 골드 / 그 이하 레드) */
-.breakdown-pct {
-  flex: 0 0 auto;
-  font-size: 12.5px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  padding: 3px 10px;
-  border-radius: 999px;
-}
-.breakdown-pct.high { color: var(--success); background: var(--success-soft); }
-.breakdown-pct.mid  { color: var(--primary); background: var(--primary-soft); }
-.breakdown-pct.low  { color: var(--danger);  background: var(--danger-soft); }
-
-/* 방문율 막대 */
-.breakdown-progress-track {
-  height: 5px;
-  border-radius: 999px;
-  background: var(--border);
-  overflow: hidden;
-  margin-top: 10px;
-}
-.breakdown-progress-fill {
-  height: 100%;
-  border-radius: 999px;
-}
-.breakdown-progress-fill.high { background: var(--success); }
-.breakdown-progress-fill.mid  { background: var(--primary); }
-.breakdown-progress-fill.low  { background: var(--danger); }
-
-.breakdown-caption {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .breakdown-team .breakdown-name {
@@ -620,29 +574,21 @@ details[open] > .breakdown-brand .breakdown-name::before {
   color: var(--primary);
 }
 
-/* 팀/담당자별 방문 수치: 색 점 + 분수로 간단하게 */
-.breakdown-frac {
-  display: inline-flex;
+/* 총/방문/미방문 숫자를 색으로 구분 (박스/알약 없이, 본문과 같은 폰트의 고정폭 숫자) */
+.breakdown-stats {
+  display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 10px;
+  font-family: 'Pretendard', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  font-weight: 600;
   flex: 0 0 auto;
   white-space: nowrap;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
 }
-.breakdown-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  align-self: center;
-  flex: 0 0 auto;
-}
-.breakdown-frac-slash {
-  color: var(--muted);
-  font-weight: 400;
-  margin: 0 1px;
-}
+.breakdown-stat { color: var(--muted); }
+.breakdown-stat.visited { color: var(--success); }
+.breakdown-stat.unvisited { color: var(--danger); }
 
 /* 미방문 매장 통계 (담당/방문/미방문 카운트) */
 .stats-row {
