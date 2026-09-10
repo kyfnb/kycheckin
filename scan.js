@@ -16,6 +16,16 @@ let pendingVisit = null; // { storeId, storeName, distance, locationOk, qrValid,
 let capturedPhotoBase64 = null;
 let capturedPhotoMimeType = null;
 
+// ⚠️ 버그 픽스: html5-qrcode는 카메라 프레임마다(초당 약 10회) 디코드를 시도하는데,
+// 같은 QR이 화면에 계속 잡혀있으면 scanner.stop()이 실제로 멈추기 전(비동기 처리 중)
+// 짧은 순간에 onScanSuccess가 연달아 여러 번 호출될 수 있습니다.
+// 특히 퇴장은 사진 확인 단계 없이 스캔 즉시 자동 저장되기 때문에, 이 중복 호출이 그대로
+// 서버 저장 요청 중복으로 이어져 "첫 번째 호출은 정상 퇴장 처리 → 이미 퇴장 처리돼서 열린
+// 입장이 없어진 상태에서 두 번째・세 번째 호출이 각각 새 입장으로 기록되는" 문제가 발생했습니다
+// (담당자 피드백: 퇴장 스캔 시 입장으로 3회 인식됨).
+// isProcessingScan 플래그로 "한 번의 스캔 처리가 끝날 때까지 추가 스캔 결과는 전부 무시"하도록 막습니다.
+let isProcessingScan = false;
+
 function startScanner() {
   html5QrScanner = new Html5Qrcode("qr-reader");
   const config = { fps: 10, qrbox: { width: 240, height: 240 } };
@@ -34,6 +44,10 @@ function startScanner() {
 }
 
 function onScanSuccess(decodedText) {
+  // 이미 처리 중인 스캔이 있으면(같은 QR이 연속 프레임에서 중복 디코드된 경우 등) 무시
+  if (isProcessingScan) return;
+  isProcessingScan = true;
+
   // 스캐너 정지 후 다음 단계로
   html5QrScanner.stop().then(() => {
     handleScannedQr(decodedText);
@@ -329,6 +343,7 @@ function resetScan() {
   document.getElementById("step-scan").style.display = "block";
   document.getElementById("step-desc").textContent = "가맹점 QR코드를 화면에 비춰주세요.";
   document.getElementById("qr-reader").innerHTML = "";
+  isProcessingScan = false; // 카메라를 다시 켜는 시점에 다음 스캔을 받을 수 있도록 플래그 해제
   pendingVisit = null;
   capturedPhotoBase64 = null;
   capturedPhotoMimeType = null;
