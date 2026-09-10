@@ -466,19 +466,15 @@ body.has-session-banner .brand-header {
 .breakdown-brand-card summary::-webkit-details-marker { display: none; }
 
 .breakdown-body {
-  padding: 2px 16px 14px;
+  padding: 0 16px 6px;
 }
 
 .breakdown-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 0;
-  font-family: 'Inter', sans-serif;
-  font-size: 13.5px;
-  font-weight: 400;
-  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
 }
 .breakdown-body .breakdown-row + .breakdown-row {
   border-top: 1px solid var(--border);
@@ -486,18 +482,24 @@ body.has-session-banner .brand-header {
 
 .breakdown-name {
   color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .breakdown-brand {
-  font-family: 'Noto Serif KR', serif;
-  font-size: 16px;
-  font-weight: 600;
   padding: 16px;
 }
 .breakdown-brand .breakdown-name {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 9px;
+  white-space: normal;
 }
 .breakdown-brand .breakdown-name::before {
   content: "›";
@@ -511,18 +513,16 @@ details[open] > .breakdown-brand .breakdown-name::before {
   transform: rotate(90deg);
 }
 
-.breakdown-team {
+.breakdown-team .breakdown-name {
   font-weight: 600;
-  font-size: 13.5px;
 }
 
 .breakdown-manager {
-  padding-left: 18px;
-  color: var(--muted);
-  font-size: 13px;
+  padding-left: 16px;
 }
 .breakdown-manager .breakdown-name {
   color: var(--muted);
+  font-size: 12.5px;
 }
 .breakdown-manager .breakdown-name::before {
   content: "‧";
@@ -530,34 +530,20 @@ details[open] > .breakdown-brand .breakdown-name::before {
   color: var(--primary);
 }
 
-/* 총/방문/미방문 숫자를 알약 뱃지로 */
+/* 숫자는 박스/알약 없이, 상단 요약 카드와 같은 고정폭 숫자체로 색상만 구분 */
 .breakdown-stats {
   display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-.breakdown-stat {
-  display: inline-block;
-  font-size: 11px;
+  align-items: baseline;
+  gap: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
   font-weight: 600;
-  padding: 4px 9px;
-  border-radius: 999px;
+  flex: 0 0 auto;
   white-space: nowrap;
-  letter-spacing: 0.01em;
 }
-.breakdown-stat.total {
-  background: var(--surface);
-  color: var(--muted);
-  border: 1px solid var(--border);
-}
-.breakdown-stat.visited {
-  background: var(--success-soft);
-  color: var(--success);
-}
-.breakdown-stat.unvisited {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
+.breakdown-stat { color: var(--muted); }
+.breakdown-stat.visited { color: var(--success); }
+.breakdown-stat.unvisited { color: var(--danger); }
 
 /* 미방문 매장 통계 (담당/방문/미방문 카운트) */
 .stats-row {
