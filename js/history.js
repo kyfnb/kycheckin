@@ -111,7 +111,10 @@ function handleTeamManagerFilterChange() {
 }
 
 let currentView = "list";
-let currentFilter = "mine";
+// ⚠️ 버그 픽스: 리더/헤드/관리자가 "전체 보기"를 누르지 않고 바로 캘린더 탭으로 이동하면
+// 기본값이 "mine"(본인 방문만)이라 캘린더가 텅 비어 보이는 문제가 있었습니다.
+// 리더/헤드/관리자는 원래 팀원들의 방문을 관리하는 게 목적이라 기본값을 "전체 보기"로 바꿨습니다.
+let currentFilter = isPrivilegedHistory ? "all" : "mine";
 let currentPeriod = "1m";
 let calendarMonth = new Date(); // 캘린더에서 보고 있는 달
 
@@ -123,6 +126,9 @@ function setView(view) {
   document.getElementById("list-view").style.display = view === "list" ? "block" : "none";
   document.getElementById("calendar-view").style.display = view === "calendar" ? "block" : "none";
   document.getElementById("unvisited-view").style.display = view === "unvisited" ? "block" : "none";
+
+  // 방문내역/전체보기 토글은 목록·캘린더에서만 의미가 있음 (미방문매장은 별도 기준으로 집계됨)
+  document.getElementById("filter-row").style.display = view === "unvisited" ? "none" : "flex";
 
   document.getElementById("view-list-btn").className = view === "list" ? "btn btn-primary tab-btn" : "btn btn-secondary tab-btn";
   document.getElementById("view-calendar-btn").className = view === "calendar" ? "btn btn-primary tab-btn" : "btn btn-secondary tab-btn";
@@ -558,7 +564,7 @@ function escapeHtml(str) {
 }
 
 // 초기 렌더
-document.getElementById("filter-mine").className = "btn btn-primary";
-document.getElementById("filter-all").className = "btn btn-secondary";
+document.getElementById("filter-mine").className = currentFilter === "mine" ? "btn btn-primary" : "btn btn-secondary";
+document.getElementById("filter-all").className = currentFilter === "all" ? "btn btn-primary" : "btn btn-secondary";
 document.querySelector('.period-btn[data-period="1m"]').className = "btn btn-primary period-btn";
 setView("list");
