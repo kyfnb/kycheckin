@@ -237,10 +237,12 @@ function renderVisitRow(v) {
   const hasCheckOut = !!v.checkOutAt;
   const checkOutWhen = hasCheckOut ? formatDateTime(v.checkOutAt) : null;
 
-  const checkInPhotoLink = v.checkInPhotoUrl
+  // 입장사진 · 이동경로 모두 관리 목적의 정보라, 팀/브랜드를 관리하는 리더·Head·관리자에게만 보여주고
+  // 담당자(staff) 본인 화면에서는 숨김
+  const checkInPhotoLink = v.checkInPhotoUrl && isPrivilegedHistory
     ? `<a href="${v.checkInPhotoUrl}" target="_blank" style="color:var(--primary); text-decoration:underline;">입장사진</a>`
     : "";
-  const routeLink = v.visitId
+  const routeLink = v.visitId && isPrivilegedHistory
     ? `<a href="#" onclick="viewRoute('${v.visitId}'); return false;" style="color:var(--primary); text-decoration:underline;">이동경로</a>`
     : "";
   const photoLinks = [checkInPhotoLink, routeLink].filter(Boolean).join(" · ");
@@ -305,14 +307,14 @@ function renderVisitRow(v) {
 
   wrapper.appendChild(row);
 
-  if (isAdminUser && v.visitId) {
+  if (isPrivilegedHistory && v.visitId) {
     wrapper.appendChild(renderAdminActions(v));
   }
 
   return wrapper;
 }
 
-// 관리자 전용: 확인여부 전환 + 삭제 버튼
+// 확인여부(입장확인/퇴장확인) 전환은 리더·Head·관리자 모두 가능, 삭제는 관리자만 가능
 function renderAdminActions(v) {
   const bar = document.createElement("div");
   bar.className = "admin-action-bar";
@@ -332,11 +334,13 @@ function renderAdminActions(v) {
     buttons.push(toggleOutBtn);
   }
 
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "btn btn-ghost admin-action-btn admin-action-danger";
-  deleteBtn.textContent = "삭제";
-  deleteBtn.onclick = () => adminDeleteVisit(v);
-  buttons.push(deleteBtn);
+  if (isAdminUser) {
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn btn-ghost admin-action-btn admin-action-danger";
+    deleteBtn.textContent = "삭제";
+    deleteBtn.onclick = () => adminDeleteVisit(v);
+    buttons.push(deleteBtn);
+  }
 
   buttons.forEach((b) => bar.appendChild(b));
   return bar;
