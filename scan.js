@@ -26,6 +26,25 @@ let capturedPhotoMimeType = null;
 // isProcessingScan 플래그로 "한 번의 스캔 처리가 끝날 때까지 추가 스캔 결과는 전부 무시"하도록 막습니다.
 let isProcessingScan = false;
 
+// ⚠️ 개선: 화면 제목이 스캔 전 과정에서 항상 "방문 등록"으로 고정돼 있어서, 입장 후 퇴장을
+// 찍으려고 다시 들어온 담당자들이 "또 입장 처리되는 건가?" 헷갈려 했습니다.
+// 입장/퇴장이 확정될 때마다(추정 → 서버 확인 → 최종 저장) 제목을 그때그때 맞춰 바꿔줍니다.
+function updateTitleForSession(type) {
+  const titleEl = document.getElementById("step-title");
+  if (!titleEl) return;
+  if (type === "checkout") {
+    titleEl.textContent = "퇴장 등록";
+  } else if (type === "checkin") {
+    titleEl.textContent = "입장 등록";
+  } else {
+    titleEl.textContent = "방문 등록";
+  }
+}
+
+// 카메라를 켜기 전, 로컬에 저장된 "점검중" 세션이 있는지로 이번 스캔이 입장인지 퇴장인지
+// 미리 짐작해서 제목을 맞춰둡니다. (실제 확정은 QR을 찍은 뒤 서버 확인으로 다시 정해짐)
+updateTitleForSession(getActiveSession() ? "checkout" : "checkin");
+
 function startScanner() {
   html5QrScanner = new Html5Qrcode("qr-reader");
   const config = { fps: 10, qrbox: { width: 240, height: 240 } };
@@ -153,6 +172,8 @@ async function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qr
     accuracy,
     sessionType
   };
+
+  updateTitleForSession(sessionType); // QR을 찍고 나서 확인된(추정) 결과로 제목을 맞춰줌
 
   if (sessionType === "checkout") {
     // 퇴장은 사진 없이 바로 처리
@@ -298,6 +319,7 @@ function showResult(storeName, distance, locationOk, qrValid, sessionType, durat
   document.getElementById("step-photo").style.display = "none";
   document.getElementById("step-result").style.display = "block";
   document.getElementById("step-desc").textContent = "방문 등록이 완료되었습니다.";
+  updateTitleForSession(sessionType); // 서버가 최종 확정한 값으로 제목을 다시 맞춰줌 (추정과 다를 수 있어서)
 
   const isCheckout = sessionType === "checkout";
   document.getElementById("result-store-name").textContent =
@@ -344,6 +366,7 @@ function resetScan() {
   document.getElementById("step-desc").textContent = "가맹점 QR코드를 화면에 비춰주세요.";
   document.getElementById("qr-reader").innerHTML = "";
   isProcessingScan = false; // 카메라를 다시 켜는 시점에 다음 스캔을 받을 수 있도록 플래그 해제
+  updateTitleForSession(getActiveSession() ? "checkout" : "checkin"); // 다음 스캔 예상 상태로 제목 초기화
   pendingVisit = null;
   capturedPhotoBase64 = null;
   capturedPhotoMimeType = null;
