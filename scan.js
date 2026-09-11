@@ -57,9 +57,30 @@ function startScanner() {
       () => {} // 스캔 실패(프레임마다 호출)는 무시
     )
     .catch((err) => {
-      showToast("카메라를 시작할 수 없습니다. 권한을 확인해주세요.");
+      showToast(cameraErrorMessage(err));
       console.error(err);
     });
+}
+
+// 카메라 권한은 이미 켜져 있는데도 항상 "권한을 확인해주세요"라고만 뜨면, 실제로는
+// 카메라가 다른 앱에서 사용 중이거나(다른 카메라/화상통화 앱 등), 기기에 후면 카메라가
+// 없거나, 브라우저 자체의 권한 상태가 "허용"이어도 실제 하드웨어 접근이 막힌 경우(회사
+// MDM/보안 프로필 등)일 수 있습니다. 원인별로 다른 안내를 보여줘서 헷갈리지 않게 합니다.
+function cameraErrorMessage(err) {
+  const name = (err && err.name) || String(err || "");
+  if (name.includes("NotAllowedError") || name.includes("PermissionDenied")) {
+    return "카메라 권한이 거부되어 있습니다. 브라우저(또는 기기) 설정에서 카메라 권한을 허용해주세요.";
+  }
+  if (name.includes("NotFoundError") || name.includes("DevicesNotFound") || name.includes("OverconstrainedError")) {
+    return "후면 카메라를 찾을 수 없습니다. 기기에 카메라가 있는지, 다른 앱이 카메라를 막고 있지 않은지 확인해주세요.";
+  }
+  if (name.includes("NotReadableError") || name.includes("TrackStartError")) {
+    return "카메라가 다른 앱에서 사용 중이거나 하드웨어 문제가 있어요. 카메라를 쓰는 다른 앱(화상통화 등)을 종료하고 다시 시도해주세요.";
+  }
+  if (name.includes("SecurityError")) {
+    return "보안 정책(회사 보안 프로필 등)으로 카메라 접근이 차단된 것 같아요. 기기 관리자에게 문의해주세요.";
+  }
+  return "카메라를 시작할 수 없습니다. 권한 설정을 확인해주세요. (" + name + ")";
 }
 
 function onScanSuccess(decodedText) {
@@ -138,11 +159,30 @@ async function handleStoreQr(storeId, qrWindow) {
     },
     (err) => {
       console.error(err);
-      showToast("위치 권한을 허용해야 방문 등록이 가능합니다.");
+      showToast(geolocationErrorMessage(err));
       resetScan();
     },
     { enableHighAccuracy: true, timeout: 15000 }
   );
+}
+
+// 위치 확인 실패는 늘 "권한을 허용해야 합니다"로만 안내하면, 이미 권한을 허용했는데도
+// GPS 신호가 약해서(실내, 지하 등) 못 잡는 경우까지 "권한 문제"로 오해하게 됩니다.
+// 에러 코드별로 다르게 안내합니다. (1=권한거부, 2=위치확인불가, 3=시간초과)
+function geolocationErrorMessage(err) {
+  if (!err || typeof err.code !== "number") {
+    return "위치를 확인하지 못했습니다. 다시 시도해주세요.";
+  }
+  if (err.code === 1) {
+    return "위치 권한이 거부되어 있습니다. 브라우저(또는 기기) 설정에서 위치 권한을 허용해주세요.";
+  }
+  if (err.code === 2) {
+    return "GPS 신호가 약해서 위치를 확인할 수 없어요. 실외로 이동하거나, 기기 설정에서 위치 모드를 '높은 정확도'로 바꾸고 다시 시도해주세요.";
+  }
+  if (err.code === 3) {
+    return "위치 확인이 시간 초과됐어요. GPS 신호가 약할 수 있어요. 잠시 후 다시 시도해주세요.";
+  }
+  return "위치를 확인하지 못했습니다. 다시 시도해주세요.";
 }
 
 // GPS까지 확인했으면, 이번 스캔이 입장인지 퇴장인지 확인합니다.
