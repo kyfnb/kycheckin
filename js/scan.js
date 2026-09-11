@@ -48,6 +48,8 @@ updateTitleForSession(getActiveSession() ? "checkout" : "checkin");
 function startScanner() {
   html5QrScanner = new Html5Qrcode("qr-reader");
   const config = { fps: 10, qrbox: { width: 240, height: 240 } };
+  const retryBtn = document.getElementById("camera-retry-btn");
+  if (retryBtn) retryBtn.style.display = "none";
 
   html5QrScanner
     .start(
@@ -59,8 +61,41 @@ function startScanner() {
     .catch((err) => {
       showToast(cameraErrorMessage(err));
       console.error(err);
+      // 카메라를 못 열었을 때 새로고침 없이 바로 다시 시도할 수 있게 버튼을 보여줌
+      if (retryBtn) retryBtn.style.display = "block";
     });
 }
+
+// 카메라 시작 실패 후 "다시 시도" 버튼을 눌렀을 때: 이전 인스턴스를 정리하고 새로 시작
+function retryScanner() {
+  const container = document.getElementById("qr-reader");
+  if (container) container.innerHTML = "";
+  if (html5QrScanner) {
+    try {
+      html5QrScanner.stop().catch(() => {}).finally(startScanner);
+      return;
+    } catch (e) {
+      // 정지할 게 없으면 바로 새로 시작
+    }
+  }
+  startScanner();
+}
+
+// ⚠️ 버그 픽스: 스캔 도중(카메라가 켜진 채) 뒤로가기·홈버튼 등으로 화면을 벗어나면
+// 카메라 스트림을 정지시키는 처리가 없어서, 일부 기기(특히 안드로이드)에서 카메라 자원이
+// 계속 붙잡힌 채로 남아 다음에 스캔을 열었을 때 "카메라가 다른 앱에서 사용 중"이라는
+// 오류(NotReadableError)가 나는 경우가 있었습니다. 페이지를 벗어나는 시점에 항상 카메라를
+// 정지시켜서 다음 스캔이 멀쩡하게 카메라를 다시 잡을 수 있도록 합니다.
+function stopScannerSafely() {
+  if (!html5QrScanner) return;
+  try {
+    html5QrScanner.stop().catch(() => {});
+  } catch (e) {
+    // 이미 정지된 상태 등은 무시
+  }
+}
+window.addEventListener("pagehide", stopScannerSafely);
+window.addEventListener("beforeunload", stopScannerSafely);
 
 // 카메라 권한은 이미 켜져 있는데도 항상 "권한을 확인해주세요"라고만 뜨면, 실제로는
 // 카메라가 다른 앱에서 사용 중이거나(다른 카메라/화상통화 앱 등), 기기에 후면 카메라가
