@@ -361,6 +361,14 @@ function showResult(storeName, distance, locationOk, qrValid, sessionType, durat
   document.getElementById("step-desc").textContent = "방문 등록이 완료되었습니다.";
   updateTitleForSession(sessionType); // 서버가 최종 확정한 값으로 제목을 다시 맞춰줌 (추정과 다를 수 있어서)
 
+  // ⚠️ 개선: "다른 가맹점 계속 스캔"이라는 문구가, 방금 입장한 매장에서 바로 퇴장을 찍으려는
+  // 상황(같은 매장)에도 그대로 나와서 헷갈린다는 피드백이 있었습니다. 입장 직후에는 "계속
+  // 스캔하기"로, 퇴장(방문 종료) 직후에는 "다른 가맹점 스캔하기"로 문구를 구분합니다.
+  const scanAgainBtn = document.getElementById("scan-again-btn");
+  if (scanAgainBtn) {
+    scanAgainBtn.textContent = sessionType === "checkout" ? "다른 가맹점 스캔하기" : "계속 스캔하기";
+  }
+
   const isCheckout = sessionType === "checkout";
   document.getElementById("result-store-name").textContent =
     `${storeName} · ${isCheckout ? "퇴장" : "입장"}`;
