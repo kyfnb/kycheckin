@@ -26,6 +26,25 @@ let capturedPhotoMimeType = null;
 // isProcessingScan 플래그로 "한 번의 스캔 처리가 끝날 때까지 추가 스캔 결과는 전부 무시"하도록 막습니다.
 let isProcessingScan = false;
 
+// ⚠️ 개선: 화면 제목이 스캔 전 과정에서 항상 "방문 등록"으로 고정돼 있어서, 입장 후 퇴장을
+// 찍으려고 다시 들어온 담당자들이 "또 입장 처리되는 건가?" 헷갈려 했습니다.
+// 입장/퇴장이 확정될 때마다(추정 → 서버 확인 → 최종 저장) 제목을 그때그때 맞춰 바꿔줍니다.
+function updateTitleForSession(type) {
+  const titleEl = document.getElementById("step-title");
+  if (!titleEl) return;
+  if (type === "checkout") {
+    titleEl.textContent = "퇴장 등록";
+  } else if (type === "checkin") {
+    titleEl.textContent = "입장 등록";
+  } else {
+    titleEl.textContent = "방문 등록";
+  }
+}
+
+// 카메라를 켜기 전, 로컬에 저장된 "점검중" 세션이 있는지로 이번 스캔이 입장인지 퇴장인지
+// 미리 짐작해서 제목을 맞춰둡니다. (실제 확정은 QR을 찍은 뒤 서버 확인으로 다시 정해짐)
+updateTitleForSession(getActiveSession() ? "checkout" : "checkin");
+
 function startScanner() {
   html5QrScanner = new Html5Qrcode("qr-reader");
   const config = { fps: 10, qrbox: { width: 240, height: 240 } };
@@ -38,9 +57,30 @@ function startScanner() {
       () => {} // 스캔 실패(프레임마다 호출)는 무시
     )
     .catch((err) => {
-      showToast("카메라를 시작할 수 없습니다. 권한을 확인해주세요.");
+      showToast(cameraErrorMessage(err));
       console.error(err);
     });
+}
+
+// 카메라 권한은 이미 켜져 있는데도 항상 "권한을 확인해주세요"라고만 뜨면, 실제로는
+// 카메라가 다른 앱에서 사용 중이거나(다른 카메라/화상통화 앱 등), 기기에 후면 카메라가
+// 없거나, 브라우저 자체의 권한 상태가 "허용"이어도 실제 하드웨어 접근이 막힌 경우(회사
+// MDM/보안 프로필 등)일 수 있습니다. 원인별로 다른 안내를 보여줘서 헷갈리지 않게 합니다.
+function cameraErrorMessage(err) {
+  const name = (err && err.name) || String(err || "");
+  if (name.includes("NotAllowedError") || name.includes("PermissionDenied")) {
+    return "카메라 권한이 거부되어 있습니다. 브라우저(또는 기기) 설정에서 카메라 권한을 허용해주세요.";
+  }
+  if (name.includes("NotFoundError") || name.includes("DevicesNotFound") || name.includes("OverconstrainedError")) {
+    return "후면 카메라를 찾을 수 없습니다. 기기에 카메라가 있는지, 다른 앱이 카메라를 막고 있지 않은지 확인해주세요.";
+  }
+  if (name.includes("NotReadableError") || name.includes("TrackStartError")) {
+    return "카메라가 다른 앱에서 사용 중이거나 하드웨어 문제가 있어요. 카메라를 쓰는 다른 앱(화상통화 등)을 종료하고 다시 시도해주세요.";
+  }
+  if (name.includes("SecurityError")) {
+    return "보안 정책(회사 보안 프로필 등)으로 카메라 접근이 차단된 것 같아요. 기기 관리자에게 문의해주세요.";
+  }
+  return "카메라를 시작할 수 없습니다. 권한 설정을 확인해주세요. (" + name + ")";
 }
 
 function onScanSuccess(decodedText) {
@@ -119,11 +159,30 @@ async function handleStoreQr(storeId, qrWindow) {
     },
     (err) => {
       console.error(err);
-      showToast("위치 권한을 허용해야 방문 등록이 가능합니다.");
+      showToast(geolocationErrorMessage(err));
       resetScan();
     },
     { enableHighAccuracy: true, timeout: 15000 }
   );
+}
+
+// 위치 확인 실패는 늘 "권한을 허용해야 합니다"로만 안내하면, 이미 권한을 허용했는데도
+// GPS 신호가 약해서(실내, 지하 등) 못 잡는 경우까지 "권한 문제"로 오해하게 됩니다.
+// 에러 코드별로 다르게 안내합니다. (1=권한거부, 2=위치확인불가, 3=시간초과)
+function geolocationErrorMessage(err) {
+  if (!err || typeof err.code !== "number") {
+    return "위치를 확인하지 못했습니다. 다시 시도해주세요.";
+  }
+  if (err.code === 1) {
+    return "위치 권한이 거부되어 있습니다. 브라우저(또는 기기) 설정에서 위치 권한을 허용해주세요.";
+  }
+  if (err.code === 2) {
+    return "GPS 신호가 약해서 위치를 확인할 수 없어요. 실외로 이동하거나, 기기 설정에서 위치 모드를 '높은 정확도'로 바꾸고 다시 시도해주세요.";
+  }
+  if (err.code === 3) {
+    return "위치 확인이 시간 초과됐어요. GPS 신호가 약할 수 있어요. 잠시 후 다시 시도해주세요.";
+  }
+  return "위치를 확인하지 못했습니다. 다시 시도해주세요.";
 }
 
 // GPS까지 확인했으면, 이번 스캔이 입장인지 퇴장인지 확인합니다.
@@ -153,6 +212,8 @@ async function prepareForPhotoStep(storeId, storeDoc, myLat, myLng, accuracy, qr
     accuracy,
     sessionType
   };
+
+  updateTitleForSession(sessionType); // QR을 찍고 나서 확인된(추정) 결과로 제목을 맞춰줌
 
   if (sessionType === "checkout") {
     // 퇴장은 사진 없이 바로 처리
@@ -298,6 +359,15 @@ function showResult(storeName, distance, locationOk, qrValid, sessionType, durat
   document.getElementById("step-photo").style.display = "none";
   document.getElementById("step-result").style.display = "block";
   document.getElementById("step-desc").textContent = "방문 등록이 완료되었습니다.";
+  updateTitleForSession(sessionType); // 서버가 최종 확정한 값으로 제목을 다시 맞춰줌 (추정과 다를 수 있어서)
+
+  // ⚠️ 개선: "다른 가맹점 계속 스캔"이라는 문구가, 방금 입장한 매장에서 바로 퇴장을 찍으려는
+  // 상황(같은 매장)에도 그대로 나와서 헷갈린다는 피드백이 있었습니다. 입장 직후에는 "계속
+  // 스캔하기"로, 퇴장(방문 종료) 직후에는 "다른 가맹점 스캔하기"로 문구를 구분합니다.
+  const scanAgainBtn = document.getElementById("scan-again-btn");
+  if (scanAgainBtn) {
+    scanAgainBtn.textContent = sessionType === "checkout" ? "다른 가맹점 스캔하기" : "계속 스캔하기";
+  }
 
   const isCheckout = sessionType === "checkout";
   document.getElementById("result-store-name").textContent =
@@ -344,6 +414,7 @@ function resetScan() {
   document.getElementById("step-desc").textContent = "가맹점 QR코드를 화면에 비춰주세요.";
   document.getElementById("qr-reader").innerHTML = "";
   isProcessingScan = false; // 카메라를 다시 켜는 시점에 다음 스캔을 받을 수 있도록 플래그 해제
+  updateTitleForSession(getActiveSession() ? "checkout" : "checkin"); // 다음 스캔 예상 상태로 제목 초기화
   pendingVisit = null;
   capturedPhotoBase64 = null;
   capturedPhotoMimeType = null;
