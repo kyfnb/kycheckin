@@ -243,7 +243,7 @@ function renderVisitRow(v) {
     ? `<a href="${v.checkInPhotoUrl}" target="_blank" style="color:var(--primary); text-decoration:underline;">입장사진</a>`
     : "";
   const routeLink = v.visitId && isPrivilegedHistory
-    ? `<a href="#" onclick="viewRoute('${v.visitId}'); return false;" style="color:var(--primary); text-decoration:underline;">이동경로</a>`
+    ? `<a href="#" onclick="viewRoute('${v.visitId}'); return false;" style="color:var(--primary); text-decoration:underline;">위치정보</a>`
     : "";
   const photoLinks = [checkInPhotoLink, routeLink].filter(Boolean).join(" · ");
 
@@ -332,6 +332,13 @@ function renderAdminActions(v) {
     toggleOutBtn.textContent = v.checkOutVerified ? "퇴장확인 취소" : "퇴장확인 처리";
     toggleOutBtn.onclick = () => adminToggleVerified(v, "checkOut");
     buttons.push(toggleOutBtn);
+  } else {
+    // 퇴장 QR을 못 찍고 넘어간 방문(입장중/퇴장누락)을 리더 이상 권한자가 강제로 닫아줄 수 있게 함
+    const forceCheckoutBtn = document.createElement("button");
+    forceCheckoutBtn.className = "btn btn-ghost admin-action-btn";
+    forceCheckoutBtn.textContent = "강제 퇴장처리";
+    forceCheckoutBtn.onclick = () => adminForceCheckout(v);
+    buttons.push(forceCheckoutBtn);
   }
 
   if (isAdminUser) {
@@ -366,6 +373,24 @@ async function adminToggleVerified(v, which) {
   } catch (e) {
     console.error(e);
     showToast("수정 중 오류가 발생했습니다.");
+  }
+}
+
+// 퇴장 QR을 못 찍고 넘어간 방문을 리더 이상 권한자가 지금 시각으로 강제 퇴장 처리
+async function adminForceCheckout(v) {
+  if (!confirm(`"${v.storeName}" 방문을 지금 시각으로 강제 퇴장 처리할까요?\n실제 GPS로 확인된 퇴장이 아니라서 처리 후에도 "확인필요" 상태로 남아요.`)) return;
+
+  try {
+    const result = await apiPost({ action: "forceCheckout", requesterEmail: sv.email, visitId: v.visitId });
+    if (result.success) {
+      showToast("퇴장 처리했어요.");
+      refreshCurrentView();
+    } else {
+      showToast(result.error || "처리에 실패했습니다.");
+    }
+  } catch (e) {
+    console.error(e);
+    showToast("처리 중 오류가 발생했습니다.");
   }
 }
 
